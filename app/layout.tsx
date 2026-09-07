@@ -9,9 +9,13 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Empreendimentos Perplan RP",
+  title: "Empreendimentos Perplan em Ribeirão Preto",
   description: "Materiais e informações dos empreendimentos Perplan para corretores parceiros.",
   appleWebApp: { title: "Empreendimentos Perplan RP" },
+  openGraph: {
+    title: "Empreendimentos Perplan em Ribeirão Preto",
+    description: "Materiais e informações dos empreendimentos Perplan para corretores parceiros.",
+  },
 };
 
 export const viewport: Viewport = {
