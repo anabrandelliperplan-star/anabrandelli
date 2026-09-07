@@ -31,7 +31,6 @@ export async function POST() {
     simSinal1Mes: "",
     simSinal2Mes: "",
     simSinal3Mes: "",
-    simMensalInicioMes: "",
   };
   data.developments.push(dev);
   await saveData(data);

@@ -31,11 +31,12 @@ export interface Development {
   typologies: TypologyColumn[];
   hidden: boolean;
   // Datas do simulador de fluxo -- fixas por empreendimento, "YYYY-MM".
+  // Mensais começam automaticamente no mês seguinte ao Sinal 3, não é um
+  // campo salvo à parte.
   simAtoMes: string;
   simSinal1Mes: string;
   simSinal2Mes: string;
   simSinal3Mes: string;
-  simMensalInicioMes: string;
 }
 
 export interface Settings {

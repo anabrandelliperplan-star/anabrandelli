@@ -6,6 +6,7 @@ import type { Development, SimulatorSettings } from "@/lib/types";
 import { formatDeliveryDate, parseDeliveryToYearMonth } from "@/lib/format";
 import {
   SPLIT_OPTIONS,
+  addMonths,
   buildWhatsAppText,
   formatMoneyInputValue,
   formatMonthYear,
@@ -71,7 +72,6 @@ interface DevDatesDraft {
   simSinal1Mes: string;
   simSinal2Mes: string;
   simSinal3Mes: string;
-  simMensalInicioMes: string;
 }
 
 function DevDatesSection({
@@ -86,7 +86,6 @@ function DevDatesSection({
     simSinal1Mes: dev.simSinal1Mes,
     simSinal2Mes: dev.simSinal2Mes,
     simSinal3Mes: dev.simSinal3Mes,
-    simMensalInicioMes: dev.simMensalInicioMes,
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -127,13 +126,9 @@ function DevDatesSection({
       <MonthField label="Data do Sinal 1 (mês/ano)" value={draft.simSinal1Mes} onChange={(v) => setField("simSinal1Mes", v)} />
       <MonthField label="Data do Sinal 2 (mês/ano)" value={draft.simSinal2Mes} onChange={(v) => setField("simSinal2Mes", v)} />
       <MonthField label="Data do Sinal 3 (mês/ano)" value={draft.simSinal3Mes} onChange={(v) => setField("simSinal3Mes", v)} />
-      <MonthField
-        label="Mensais começam em (mês/ano)"
-        value={draft.simMensalInicioMes}
-        onChange={(v) => setField("simMensalInicioMes", v)}
-      />
       <p className="sm:col-span-2 text-xs" style={{ color: "var(--text-2)" }}>
-        Anuais e parcela única não podem cair depois da data de entrega -- não precisa configurar isso, é automático.
+        Mensais começam automaticamente no mês seguinte ao Sinal 3. Anuais e parcela única não podem cair depois da
+        data de entrega. Nenhum dos dois precisa ser configurado à parte.
       </p>
       <div className="sm:col-span-2 flex items-center gap-3">
         <button className="btn btn-outline btn-sm" style={{ color: "var(--accent)", borderColor: "var(--accent)" }} onClick={save} disabled={saving} type="button">
@@ -261,17 +256,18 @@ export function SimulatorPage({
     setCopied(false);
   }
 
-  const dates: DevSimDates = useMemo(
-    () => ({
+  const dates: DevSimDates = useMemo(() => {
+    const sinal3Mes = selectedDev?.simSinal3Mes || "";
+    return {
       atoMes: selectedDev?.simAtoMes || "",
       sinal1Mes: selectedDev?.simSinal1Mes || "",
       sinal2Mes: selectedDev?.simSinal2Mes || "",
-      sinal3Mes: selectedDev?.simSinal3Mes || "",
-      mensalInicioMes: selectedDev?.simMensalInicioMes || "",
+      sinal3Mes,
+      // Mensais começam automaticamente no mês seguinte ao Sinal 3.
+      mensalInicioMes: sinal3Mes ? addMonths(sinal3Mes, 1) : "",
       entregaMes: (selectedDev && parseDeliveryToYearMonth(selectedDev.statusDetail)) || "",
-    }),
-    [selectedDev]
-  );
+    };
+  }, [selectedDev]);
 
   const result = useMemo(() => simulate(input, dates), [input, dates]);
 
@@ -358,7 +354,7 @@ export function SimulatorPage({
             />
 
             <MoneyField
-              label={`Mensal (R$ cada, ${result.mesesObra}x -- a partir de ${dates.mensalInicioMes ? formatMonthYear(dates.mensalInicioMes) : "data não configurada"})`}
+              label={`Mensal (R$ cada, ${result.mesesObra}x -- a partir de ${dates.mensalInicioMes ? formatMonthYear(dates.mensalInicioMes) : "configure o Sinal 3 acima"})`}
               value={input.mensalValor}
               onChange={(v) => set("mensalValor", v)}
             />
