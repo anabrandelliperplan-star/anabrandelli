@@ -338,6 +338,17 @@ export function SimulatorPage({
           <h3 className="font-display font-bold text-sm mb-3">Simular</h3>
           <div className="admin-row p-4 grid gap-3 sm:grid-cols-2 mb-6">
             <div className="field sm:col-span-2">
+              <label>Empreendimento</label>
+              <select value={selectedDevId} onChange={(e) => selectDevelopment(e.target.value)}>
+                <option value="">Selecione um empreendimento</option>
+                {devList.map((dev) => (
+                  <option key={dev.id} value={dev.id}>
+                    {dev.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="field sm:col-span-2">
               <label>Unidade (opcional -- ex.: &quot;Unidade 142 - Torre Cerejeira | 84,50 m²&quot;)</label>
               <input type="text" value={input.unidadeLabel} onChange={(e) => set("unidadeLabel", e.target.value)} />
             </div>
