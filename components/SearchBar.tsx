@@ -1,0 +1,217 @@
+"use client";
+
+import { useRef, useState } from "react";
+import type { Development, SearchItem } from "@/lib/types";
+import { buildSearchIndex, normalizeSearch, searchItems } from "@/lib/search";
+import { Icon, ICON_SEARCH, searchIconFor } from "@/lib/icons";
+
+function filterCardsByName(query: string) {
+  const grid = document.getElementById("cards-grid");
+  const emptyMsg = document.getElementById("cards-no-results");
+  if (!grid) return;
+  const q = normalizeSearch(query || "");
+  const cards = grid.querySelectorAll<HTMLElement>(".card");
+  let visibleCount = 0;
+  cards.forEach((card) => {
+    const matches = !q || (card.getAttribute("data-nome") || "").indexOf(q) !== -1;
+    card.hidden = !matches;
+    if (matches) visibleCount++;
+  });
+  if (emptyMsg) emptyMsg.hidden = visibleCount !== 0;
+}
+
+function SearchResultRow({ item, idx, onSelect }: { item: SearchItem; idx: number; onSelect: () => void }) {
+  const preview = item.value.length > 70 ? item.value.slice(0, 70) + "…" : item.value;
+  const inner = (
+    <>
+      <Icon html={searchIconFor(item.label)} />
+      <span className="search-result-text">
+        <span className="search-result-label">
+          {item.label} <span className="search-result-dev">· {item.dev}</span>
+        </span>
+        <span className="search-result-value">
+          {preview}
+          {item.kind === "link" ? " ↗" : ""}
+        </span>
+      </span>
+    </>
+  );
+  if (item.kind === "link") {
+    return (
+      <a
+        id={"search-row-" + idx}
+        href={item.url}
+        target="_blank"
+        rel="noopener"
+        className="search-result-row"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={onSelect}
+      >
+        {inner}
+      </a>
+    );
+  }
+  return (
+    <button
+      id={"search-row-" + idx}
+      type="button"
+      className="search-result-row"
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={onSelect}
+    >
+      {inner}
+    </button>
+  );
+}
+
+function SearchAnswer({ item, onClose }: { item: SearchItem; onClose: () => void }) {
+  return (
+    <div className="search-answer">
+      <div className="search-answer-head">
+        <Icon html={searchIconFor(item.label)} />
+        <span className="search-answer-title">
+          {item.label} <span className="search-result-dev">· {item.dev}</span>
+        </span>
+        <button
+          type="button"
+          className="search-answer-close"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={onClose}
+          aria-label="Fechar"
+        >
+          ✕
+        </button>
+      </div>
+      <div className="search-answer-value">{item.value}</div>
+    </div>
+  );
+}
+
+export function SearchBar({ developments }: { developments: Development[] }) {
+  const [value, setValue] = useState("");
+  const [results, setResults] = useState<SearchItem[]>([]);
+  const [answer, setAnswer] = useState<SearchItem | null>(null);
+  const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function runQuery(q: string) {
+    setAnswer(null);
+    if (!q.trim()) {
+      setResults([]);
+      setOpen(false);
+      return;
+    }
+    setResults(searchItems(q, developments).slice(0, 8));
+    setOpen(true);
+  }
+
+  function onInput(val: string) {
+    setValue(val);
+    runQuery(val);
+    filterCardsByName(val);
+  }
+
+  function toggleAll() {
+    const q = value.trim();
+    if (q) {
+      runQuery(q);
+    } else {
+      setAnswer(null);
+      setResults(buildSearchIndex(developments));
+      setOpen(true);
+    }
+    inputRef.current?.focus();
+  }
+
+  function onFocus() {
+    if (value.trim()) {
+      runQuery(value);
+    } else {
+      toggleAll();
+    }
+  }
+
+  function onBlur() {
+    setTimeout(() => setOpen(false), 150);
+  }
+
+  function clear() {
+    setValue("");
+    setAnswer(null);
+    setResults([]);
+    setOpen(false);
+    filterCardsByName("");
+    inputRef.current?.focus();
+  }
+
+  function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const first = document.getElementById("search-row-0");
+      first?.click();
+    } else if (e.key === "Escape") {
+      clear();
+    }
+  }
+
+  function afterLinkClick() {
+    setValue("");
+    setOpen(false);
+  }
+
+  function select(item: SearchItem) {
+    setAnswer(item);
+  }
+
+  return (
+    <div className="search-wrap">
+      <div className="search-box">
+        <button
+          type="button"
+          className="search-icon-btn"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={toggleAll}
+          aria-label="Mostrar todas as opções de busca"
+        >
+          <Icon html={ICON_SEARCH} />
+        </button>
+        <input
+          ref={inputRef}
+          id="search-input"
+          type="text"
+          placeholder="Buscar: ex. tabela MB Park, book Riverside..."
+          autoComplete="off"
+          value={value}
+          onChange={(e) => onInput(e.target.value)}
+          onKeyDown={onKeyDown}
+          onFocus={onFocus}
+          onBlur={onBlur}
+        />
+        <button type="button" className="search-clear" onClick={clear} aria-label="Limpar busca">
+          ✕
+        </button>
+      </div>
+      <div id="search-results" className="search-results" hidden={!open}>
+        {answer ? (
+          <SearchAnswer item={answer} onClose={() => setAnswer(null)} />
+        ) : results.length ? (
+          results.map((item, idx) => (
+            <SearchResultRow
+              key={idx}
+              item={item}
+              idx={idx}
+              onSelect={() => {
+                if (item.kind === "link") afterLinkClick();
+                else select(item);
+              }}
+            />
+          ))
+        ) : (
+          <div className="search-empty">
+            {value.trim() ? `Nada encontrado para "${value.trim()}"` : "Nenhuma informação cadastrada ainda"}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
