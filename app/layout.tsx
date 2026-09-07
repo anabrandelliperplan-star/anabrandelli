@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
@@ -11,6 +11,11 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "Hub de Parcerias Perplan",
   description: "Materiais e informações dos empreendimentos Perplan para corretores parceiros.",
+  appleWebApp: { title: "Hub Perplan" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0d0d0d",
 };
 
 const ANTI_FLASH_THEME_SCRIPT = `(function(){try{var t=localStorage.getItem("tema");if(!t){t=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches)?"light":"dark";}document.documentElement.setAttribute("data-theme",t);}catch(e){}})();`;
