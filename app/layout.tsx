@@ -9,9 +9,9 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Hub de Parcerias Perplan",
+  title: "Empreendimentos Perplan RP",
   description: "Materiais e informações dos empreendimentos Perplan para corretores parceiros.",
-  appleWebApp: { title: "Hub Perplan" },
+  appleWebApp: { title: "Empreendimentos Perplan RP" },
 };
 
 export const viewport: Viewport = {

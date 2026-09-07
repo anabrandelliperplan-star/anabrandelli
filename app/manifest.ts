@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Hub de Parcerias Perplan",
-    short_name: "Hub Perplan",
+    name: "Empreendimentos Perplan RP",
+    short_name: "Perplan RP",
     start_url: "/",
     display: "standalone",
     background_color: "#0d0d0d",
