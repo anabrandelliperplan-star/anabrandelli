@@ -6,6 +6,7 @@ import type { Development, HubData, Settings } from "@/lib/types";
 import { money, statusBadge } from "@/lib/format";
 import { DevelopmentEditor } from "./DevelopmentEditor";
 import { SettingsForm } from "./SettingsForm";
+import { ChangePasswordForm } from "./ChangePasswordForm";
 
 type StatusMsg = { kind: "info" | "ok" | "err"; text: string } | null;
 
@@ -170,6 +171,7 @@ export function AdminDashboard({ initialData }: { initialData: HubData }) {
       </button>
 
       <SettingsForm settings={settings} onSave={saveSettings} saving={saving} />
+      <ChangePasswordForm />
     </section>
   );
 }

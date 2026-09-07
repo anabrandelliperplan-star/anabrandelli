@@ -15,6 +15,10 @@ function redis(): Redis {
 }
 
 const HUB_KEY = "hub:data";
+// Chave separada de HUB_KEY de propósito: `hub:data` (settings) é devolvido
+// inteiro pela rota GET /api/admin/settings para preencher o formulário no
+// navegador -- se o hash da senha estivesse ali dentro, vazaria pro cliente.
+const ADMIN_PASSWORD_HASH_KEY = "hub:admin_password_hash";
 
 const EMPTY_DATA: HubData = {
   settings: {
@@ -37,4 +41,12 @@ export async function getData(): Promise<HubData> {
 
 export async function saveData(data: HubData): Promise<void> {
   await redis().set(HUB_KEY, JSON.stringify(data));
+}
+
+export async function getAdminPasswordHash(): Promise<string | null> {
+  return redis().get(ADMIN_PASSWORD_HASH_KEY);
+}
+
+export async function setAdminPasswordHash(hash: string): Promise<void> {
+  await redis().set(ADMIN_PASSWORD_HASH_KEY, hash);
 }
