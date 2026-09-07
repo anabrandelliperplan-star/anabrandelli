@@ -15,7 +15,7 @@ function Brandmark({ settings }: { settings: Settings }) {
       </>
     );
   }
-  const style = { height: "4rem", width: "auto", maxWidth: "14rem" } as const;
+  const style = { height: "6rem", width: "auto", maxWidth: "20rem" } as const;
   return (
     <>
       {/* eslint-disable-next-line @next/next/no-img-element */}
