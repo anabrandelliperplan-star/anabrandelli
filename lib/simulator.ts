@@ -18,6 +18,7 @@ export interface SimulatorInput {
   anuaisValor: number; // valor de cada parcela anual
   unicaAtivo: boolean;
   unicaValor: number;
+  mensalValor: number; // valor de cada mensal -- digitado livremente, não é mais calculado
   unidadeLabel: string; // ex.: "Unidade 142 - Torre Cerejeira | 84,50 m²" (preenchido manualmente por enquanto)
 }
 
@@ -32,13 +33,11 @@ export interface SimulatorResult {
   sinalTotal: number;
   anuaisTotal: number;
   unicaTotal: number;
-  intermediariasTotal: number; // ato + sinais + anuais + unica
-  saldoParaMensais: number; // valorObra - intermediariasTotal (pode ser negativo -> erro)
   mesesObra: number;
-  mensalValor: number; // 0 se saldoParaMensais <= 0
-  excedeuSaldoObra: boolean;
-  atoAbaixoDoMinimo: boolean;
-  percMinAtoAplicado: number;
+  mensalValor: number;
+  mensalTotal: number; // mensalValor * mesesObra
+  totalColetadoObra: number; // ato + sinais + anuais + unica + mensais
+  saldoFaltante: number; // valorObra - totalColetadoObra; positivo = falta dinheiro, negativo = sobrou
 }
 
 export function simulate(input: SimulatorInput, settings: SimulatorSettings): SimulatorResult {
@@ -49,14 +48,10 @@ export function simulate(input: SimulatorInput, settings: SimulatorSettings): Si
   const sinalTotal = round2(input.sinal * 3);
   const anuaisTotal = input.anuaisAtivo ? round2(input.anuaisQuantidade * input.anuaisValor) : 0;
   const unicaTotal = input.unicaAtivo ? round2(input.unicaValor) : 0;
+  const mensalTotal = round2(input.mensalValor * settings.mesesObra);
 
-  const intermediariasTotal = round2(input.ato + sinalTotal + anuaisTotal + unicaTotal);
-  const saldoParaMensais = round2(valorObra - intermediariasTotal);
-  const excedeuSaldoObra = saldoParaMensais < 0;
-  const mensalValor = excedeuSaldoObra || settings.mesesObra <= 0 ? 0 : round2(saldoParaMensais / settings.mesesObra);
-
-  const minAtoValor = round2((valorObra * settings.percMinAto) / 100);
-  const atoAbaixoDoMinimo = input.ato < minAtoValor;
+  const totalColetadoObra = round2(input.ato + sinalTotal + anuaisTotal + unicaTotal + mensalTotal);
+  const saldoFaltante = round2(valorObra - totalColetadoObra);
 
   const valorPorM2 = input.areaM2 > 0 ? round2(input.valorImovel / input.areaM2) : 0;
 
@@ -71,13 +66,11 @@ export function simulate(input: SimulatorInput, settings: SimulatorSettings): Si
     sinalTotal,
     anuaisTotal,
     unicaTotal,
-    intermediariasTotal,
-    saldoParaMensais,
     mesesObra: settings.mesesObra,
-    mensalValor,
-    excedeuSaldoObra,
-    atoAbaixoDoMinimo,
-    percMinAtoAplicado: settings.percMinAto,
+    mensalValor: input.mensalValor,
+    mensalTotal,
+    totalColetadoObra,
+    saldoFaltante,
   };
 }
 
@@ -109,7 +102,7 @@ export function buildWhatsAppText(input: SimulatorInput, result: SimulatorResult
   lines.push(`- 3x Sinal (30/60/90 dias): ${money(result.sinalUnitario)} cada (total ${money(result.sinalTotal)})`);
   if (input.anuaisAtivo) lines.push(`- Anuais (${input.anuaisQuantidade}x): ${money(input.anuaisValor)} cada (total ${money(result.anuaisTotal)})`);
   if (input.unicaAtivo) lines.push(`- Parcela única: ${money(result.unicaTotal)}`);
-  lines.push(`- Mensais (${result.mesesObra}x): ${money(result.mensalValor)} cada`);
+  lines.push(`- Mensais (${result.mesesObra}x): ${money(result.mensalValor)} cada (total ${money(result.mensalTotal)})`);
   if (result.valorFinanciamento > 0) {
     lines.push("");
     lines.push(`Na entrega (financiamento bancário): ${money(result.valorFinanciamento)}`);

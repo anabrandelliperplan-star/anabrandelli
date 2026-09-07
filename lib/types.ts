@@ -45,7 +45,6 @@ export interface Settings {
 
 export interface SimulatorSettings {
   mesesObra: number;
-  percMinAto: number;
   allowAnuais: boolean;
   allowParcelaUnica: boolean;
 }

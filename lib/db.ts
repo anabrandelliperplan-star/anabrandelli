@@ -22,7 +22,6 @@ const ADMIN_PASSWORD_HASH_KEY = "hub:admin_password_hash";
 
 const DEFAULT_SIMULATOR_SETTINGS = {
   mesesObra: 18,
-  percMinAto: 10,
   allowAnuais: true,
   allowParcelaUnica: true,
 };

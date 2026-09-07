@@ -74,14 +74,6 @@ function SettingsSection({
           onChange={(e) => setDraft((d) => ({ ...d, mesesObra: Number(e.target.value) || 0 }))}
         />
       </div>
-      <div className="field">
-        <label>% mínimo de ato</label>
-        <input
-          type="number"
-          value={draft.percMinAto}
-          onChange={(e) => setDraft((d) => ({ ...d, percMinAto: Number(e.target.value) || 0 }))}
-        />
-      </div>
       <div className="field sm:col-span-2" style={{ flexDirection: "row", alignItems: "center", gap: "1.5rem" }}>
         <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", fontWeight: 400 }}>
           <input
@@ -123,6 +115,7 @@ const EMPTY_INPUT: SimulatorInput = {
   anuaisValor: 0,
   unicaAtivo: false,
   unicaValor: 0,
+  mensalValor: 0,
   unidadeLabel: "",
 };
 
@@ -194,6 +187,11 @@ export function SimulatorPage({ initialSettings }: { initialSettings: SimulatorS
         </div>
         <MoneyField label="Ato (R$)" value={input.ato} onChange={(v) => set("ato", v)} />
         <MoneyField label="Sinal (R$ cada, 3x -- 30/60/90 dias)" value={input.sinal} onChange={(v) => set("sinal", v)} />
+        <MoneyField
+          label={`Mensal (R$ cada, ${settings.mesesObra}x)`}
+          value={input.mensalValor}
+          onChange={(v) => set("mensalValor", v)}
+        />
         {settings.allowAnuais ? (
           <>
             <div className="field">
@@ -243,15 +241,14 @@ export function SimulatorPage({ initialSettings }: { initialSettings: SimulatorS
 
       <h3 className="font-display font-bold text-sm mb-3">Resultado</h3>
       <div className="admin-row p-4 mb-3">
-        {result.atoAbaixoDoMinimo ? (
+        {result.saldoFaltante > 0 ? (
           <p className="status-msg err mb-3" style={{ display: "inline-block" }}>
-            O ato está abaixo do mínimo de {result.percMinAtoAplicado}% do valor de obra ({money((result.valorObra * result.percMinAtoAplicado) / 100)}).
+            Falta {money(result.saldoFaltante)} para fechar o valor do período de obra com o fluxo desejado -- ato +
+            sinais + anuais + parcela única + mensais ainda não cobrem {money(result.valorObra)}.
           </p>
-        ) : null}
-        {result.excedeuSaldoObra ? (
-          <p className="status-msg err mb-3" style={{ display: "inline-block" }}>
-            Faltam {money(-result.saldoParaMensais)} -- ato + sinais + anuais + parcela única já ultrapassam o valor do
-            período de obra nesse valor, então não sobra nada para dividir em mensais.
+        ) : result.saldoFaltante < 0 ? (
+          <p className="status-msg info mb-3" style={{ display: "inline-block" }}>
+            Esse fluxo coleta {money(-result.saldoFaltante)} a mais do que o valor do período de obra.
           </p>
         ) : null}
 
@@ -299,10 +296,10 @@ export function SimulatorPage({ initialSettings }: { initialSettings: SimulatorS
             </p>
           ) : null}
           <p>
-            Falta dividir em mensais: <strong>{money(Math.max(0, result.saldoParaMensais))}</strong>
+            Mensais ({result.mesesObra}x): <strong>{money(result.mensalValor)}</strong> cada (total {money(result.mensalTotal)})
           </p>
           <p>
-            Mensais ({result.mesesObra}x): <strong>{money(result.mensalValor)}</strong> cada
+            Total coletado no período de obra: <strong>{money(result.totalColetadoObra)}</strong>
           </p>
         </div>
       </div>
