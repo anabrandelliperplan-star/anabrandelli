@@ -30,7 +30,7 @@ function SpecsRow({ dev }: { dev: Development }) {
           <Icon html={ICON_PAYMENT} />
           <span>Pagamento</span>
         </p>
-        <p className="spec-value">{hasPayment ? dev.fluxoPagamento : ""}</p>
+        <p className="spec-value spec-value-payment">{hasPayment ? dev.fluxoPagamento : ""}</p>
       </div>
     </div>
   );
