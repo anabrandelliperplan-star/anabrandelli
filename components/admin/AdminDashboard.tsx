@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useState } from "react";
 import type { Development, HubData, Settings } from "@/lib/types";
 import { money, statusBadge } from "@/lib/format";
@@ -136,9 +137,14 @@ export function AdminDashboard({ initialData }: { initialData: HubData }) {
           <div className="rule-eyebrow eyebrow">Painel administrativo</div>
           <h2 className="font-display font-extrabold text-xl mt-2">Materiais e configurações</h2>
         </div>
-        <button className="btn btn-ghost btn-sm" onClick={logout} type="button">
-          Sair
-        </button>
+        <div className="flex gap-2 flex-shrink-0">
+          <Link href="/admin/simulador" className="btn btn-outline btn-sm" style={{ color: "var(--accent)", borderColor: "var(--accent)" }}>
+            Simulador de fluxo
+          </Link>
+          <button className="btn btn-ghost btn-sm" onClick={logout} type="button">
+            Sair
+          </button>
+        </div>
       </div>
 
       {status ? <div className={"status-msg " + status.kind + " mt-4"} style={{ display: "inline-block" }}>{status.text}</div> : null}

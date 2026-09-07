@@ -20,6 +20,13 @@ const HUB_KEY = "hub:data";
 // navegador -- se o hash da senha estivesse ali dentro, vazaria pro cliente.
 const ADMIN_PASSWORD_HASH_KEY = "hub:admin_password_hash";
 
+const DEFAULT_SIMULATOR_SETTINGS = {
+  mesesObra: 18,
+  percMinAto: 10,
+  allowAnuais: true,
+  allowParcelaUnica: true,
+};
+
 const EMPTY_DATA: HubData = {
   settings: {
     whatsapp: "",
@@ -32,11 +39,16 @@ const EMPTY_DATA: HubData = {
     logoImageLight: "",
   },
   developments: [],
+  simulatorSettings: DEFAULT_SIMULATOR_SETTINGS,
 };
 
 export async function getData(): Promise<HubData> {
   const raw = await redis().get(HUB_KEY);
-  return raw ? (JSON.parse(raw) as HubData) : EMPTY_DATA;
+  if (!raw) return EMPTY_DATA;
+  const data = JSON.parse(raw) as HubData;
+  // Dado salvo antes do simulador existir não tem esse campo -- completa com o padrão.
+  if (!data.simulatorSettings) data.simulatorSettings = DEFAULT_SIMULATOR_SETTINGS;
+  return data;
 }
 
 export async function saveData(data: HubData): Promise<void> {

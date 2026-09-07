@@ -43,9 +43,17 @@ export interface Settings {
   logoImageLight: string;
 }
 
+export interface SimulatorSettings {
+  mesesObra: number;
+  percMinAto: number;
+  allowAnuais: boolean;
+  allowParcelaUnica: boolean;
+}
+
 export interface HubData {
   settings: Settings;
   developments: Development[];
+  simulatorSettings: SimulatorSettings;
 }
 
 export interface SearchItem {
