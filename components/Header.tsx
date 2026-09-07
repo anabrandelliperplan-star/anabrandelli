@@ -34,12 +34,23 @@ export function Header({ settings, developments }: { settings: Settings; develop
       style={{ background: "var(--bg)", color: "var(--text)" }}
       className="px-6 pt-9 pb-8 sm:pt-12 sm:pb-10 lg:px-12 lg:pt-16 lg:pb-14"
     >
-      <SearchBar developments={developments} />
-      <div className="flex items-center justify-between mt-5">
-        <div className="brandmark">
-          <Brandmark settings={settings} />
+      <div className="flex flex-wrap items-center gap-5 sm:gap-6">
+        <div className="w-full sm:w-auto sm:flex-1 sm:order-2">
+          <SearchBar developments={developments} />
         </div>
-        <ThemeToggle />
+        {/* Espaçador do mesmo tamanho do botão de tema, só no mobile: sem ele
+            a logo (que ocupa o espaço restante da linha) fica centralizada em
+            relação a uma largura menor que a linha inteira, por causa do
+            botão do outro lado. */}
+        <div className="w-[2.4rem] shrink-0 sm:hidden" aria-hidden="true" />
+        <div className="flex-1 flex justify-center sm:flex-none sm:justify-start sm:order-1">
+          <div className="brandmark">
+            <Brandmark settings={settings} />
+          </div>
+        </div>
+        <div className="shrink-0 sm:order-3">
+          <ThemeToggle />
+        </div>
       </div>
       <div className="hero-card mt-6">
         <div className="hero-person">
