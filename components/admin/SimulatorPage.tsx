@@ -248,11 +248,14 @@ export function SimulatorPage({
   function selectDevelopment(id: string) {
     setSelectedDevId(id);
     const dev = devList.find((d) => d.id === id);
-    setInput((i) => ({
-      ...i,
+    // Zera todos os campos da simulação ao trocar de empreendimento -- sem
+    // isso, valores digitados para o empreendimento anterior (ato, sinal,
+    // mensal, anuais...) ficavam visíveis por engano no novo.
+    setInput({
+      ...EMPTY_INPUT,
       developmentName: dev ? dev.name : "",
-      valorImovel: dev ? dev.priceFrom : i.valorImovel,
-    }));
+      valorImovel: dev ? dev.priceFrom : 0,
+    });
     setCopied(false);
   }
 
@@ -312,6 +315,7 @@ export function SimulatorPage({
         <>
           <h3 className="font-display font-bold text-sm mb-3">Datas deste empreendimento</h3>
           <DevDatesSection
+            key={selectedDev.id}
             dev={selectedDev}
             onSaved={(updated) => setDevList((list) => list.map((d) => (d.id === updated.id ? updated : d)))}
           />
