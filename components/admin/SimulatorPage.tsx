@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { Development, SimulatorSettings } from "@/lib/types";
 import { formatDeliveryDate, parseDeliveryToYearMonth, waLink } from "@/lib/format";
@@ -34,6 +34,18 @@ function MoneyField({
   onChange: (n: number) => void;
   disabled?: boolean;
 }) {
+  // Guarda o texto digitado à parte do valor numérico -- reformatar em cima
+  // de cada tecla (ex.: "1" -> "1,00" -> "1,00,0"...) empurrava a vírgula
+  // pra fora antes de dar tempo de digitar os centavos. Só reformata ao
+  // sair do campo (blur) ou quando o valor muda de fora (ex.: trocar de
+  // empreendimento).
+  const [text, setText] = useState(() => formatMoneyInputValue(value));
+  const [focused, setFocused] = useState(false);
+
+  useEffect(() => {
+    if (!focused) setText(formatMoneyInputValue(value));
+  }, [value, focused]);
+
   return (
     <div className="field">
       <label>{label}</label>
@@ -41,8 +53,16 @@ function MoneyField({
         type="text"
         inputMode="decimal"
         disabled={disabled}
-        value={formatMoneyInputValue(value)}
-        onChange={(e) => onChange(parseMoneyInput(e.target.value))}
+        value={text}
+        onFocus={() => setFocused(true)}
+        onChange={(e) => {
+          setText(e.target.value);
+          onChange(parseMoneyInput(e.target.value));
+        }}
+        onBlur={() => {
+          setFocused(false);
+          setText(formatMoneyInputValue(value));
+        }}
       />
     </div>
   );
