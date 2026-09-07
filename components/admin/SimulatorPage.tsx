@@ -3,7 +3,37 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { SimulatorSettings } from "@/lib/types";
+import { parsePriceInput } from "@/lib/format";
 import { SPLIT_OPTIONS, buildWhatsAppText, money, simulate, type SimulatorInput, type SplitOption } from "@/lib/simulator";
+
+// Campos de dinheiro usam type="text" + parsePriceInput -- um <input type="number">
+// interpreta "587.354" como 587,354 (ponto = decimal), não como milhar
+// brasileiro. Mesmo problema (e mesma correção) já usados no preço dos
+// empreendimentos em DevelopmentEditor.tsx.
+function MoneyField({
+  label,
+  value,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  value: number;
+  onChange: (n: number) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="field">
+      <label>{label}</label>
+      <input
+        type="text"
+        inputMode="numeric"
+        disabled={disabled}
+        value={value ? value.toLocaleString("pt-BR") : ""}
+        onChange={(e) => onChange(parsePriceInput(e.target.value))}
+      />
+    </div>
+  );
+}
 
 function SettingsSection({
   settings,
@@ -141,10 +171,7 @@ export function SimulatorPage({ initialSettings }: { initialSettings: SimulatorS
           <label>Unidade (opcional -- ex.: &quot;Unidade 142 - Torre Cerejeira | 84,50 m²&quot;)</label>
           <input type="text" value={input.unidadeLabel} onChange={(e) => set("unidadeLabel", e.target.value)} />
         </div>
-        <div className="field">
-          <label>Valor do imóvel (R$)</label>
-          <input type="number" value={input.valorImovel || ""} onChange={(e) => set("valorImovel", Number(e.target.value) || 0)} />
-        </div>
+        <MoneyField label="Valor do imóvel (R$)" value={input.valorImovel} onChange={(v) => set("valorImovel", v)} />
         <div className="field">
           <label>Split (obra / financiamento)</label>
           <select value={input.split} onChange={(e) => set("split", e.target.value as SplitOption)}>
@@ -155,14 +182,8 @@ export function SimulatorPage({ initialSettings }: { initialSettings: SimulatorS
             ))}
           </select>
         </div>
-        <div className="field">
-          <label>Ato (R$)</label>
-          <input type="number" value={input.ato || ""} onChange={(e) => set("ato", Number(e.target.value) || 0)} />
-        </div>
-        <div className="field">
-          <label>Sinal (R$ cada, 3x -- 30/60/90 dias)</label>
-          <input type="number" value={input.sinal || ""} onChange={(e) => set("sinal", Number(e.target.value) || 0)} />
-        </div>
+        <MoneyField label="Ato (R$)" value={input.ato} onChange={(v) => set("ato", v)} />
+        <MoneyField label="Sinal (R$ cada, 3x -- 30/60/90 dias)" value={input.sinal} onChange={(v) => set("sinal", v)} />
         {settings.allowAnuais ? (
           <>
             <div className="field">
@@ -187,13 +208,7 @@ export function SimulatorPage({ initialSettings }: { initialSettings: SimulatorS
                 />
               </div>
               <div style={{ flex: 1 }}>
-                <label>Valor cada (R$)</label>
-                <input
-                  type="number"
-                  disabled={!input.anuaisAtivo}
-                  value={input.anuaisValor || ""}
-                  onChange={(e) => set("anuaisValor", Number(e.target.value) || 0)}
-                />
+                <MoneyField label="Valor cada (R$)" value={input.anuaisValor} onChange={(v) => set("anuaisValor", v)} disabled={!input.anuaisAtivo} />
               </div>
             </div>
           </>
@@ -211,15 +226,7 @@ export function SimulatorPage({ initialSettings }: { initialSettings: SimulatorS
                 Parcela única
               </label>
             </div>
-            <div className="field">
-              <label>Valor (R$)</label>
-              <input
-                type="number"
-                disabled={!input.unicaAtivo}
-                value={input.unicaValor || ""}
-                onChange={(e) => set("unicaValor", Number(e.target.value) || 0)}
-              />
-            </div>
+            <MoneyField label="Valor (R$)" value={input.unicaValor} onChange={(v) => set("unicaValor", v)} disabled={!input.unicaAtivo} />
           </>
         ) : null}
       </div>
@@ -233,21 +240,32 @@ export function SimulatorPage({ initialSettings }: { initialSettings: SimulatorS
         ) : null}
         {result.excedeuSaldoObra ? (
           <p className="status-msg err mb-3" style={{ display: "inline-block" }}>
-            Ato + sinais + anuais + parcela única ultrapassam o valor do período de obra em {money(-result.saldoParaMensais)}.
+            Faltam {money(-result.saldoParaMensais)} -- ato + sinais + anuais + parcela única já ultrapassam o valor do
+            período de obra nesse valor, então não sobra nada para dividir em mensais.
           </p>
         ) : null}
+
+        <div className="grid gap-3 sm:grid-cols-2 mb-4">
+          <div className="admin-row p-3">
+            <p className="text-xs uppercase tracking-wide" style={{ color: "var(--text-2)" }}>
+              A pagar no período de obra
+            </p>
+            <p className="font-display font-extrabold text-2xl mt-1">{money(result.valorObra)}</p>
+          </div>
+          <div className="admin-row p-3">
+            <p className="text-xs uppercase tracking-wide" style={{ color: "var(--text-2)" }}>
+              A pagar pós-obra (financiamento)
+            </p>
+            <p className="font-display font-extrabold text-2xl mt-1">{money(result.valorFinanciamento)}</p>
+          </div>
+        </div>
+
         <div className="grid gap-2 sm:grid-cols-2 text-sm">
           <p>
             Valor do imóvel: <strong>{money(result.valorImovel)}</strong>
           </p>
           <p>
             Split: <strong>{input.split.replace("/", "% obra / ")}% financiamento</strong>
-          </p>
-          <p>
-            Valor período de obra: <strong>{money(result.valorObra)}</strong>
-          </p>
-          <p>
-            Valor financiamento (na entrega): <strong>{money(result.valorFinanciamento)}</strong>
           </p>
           <p>
             Ato: <strong>{money(result.ato)}</strong>
@@ -265,6 +283,9 @@ export function SimulatorPage({ initialSettings }: { initialSettings: SimulatorS
               Parcela única: <strong>{money(result.unicaTotal)}</strong>
             </p>
           ) : null}
+          <p>
+            Falta dividir em mensais: <strong>{money(Math.max(0, result.saldoParaMensais))}</strong>
+          </p>
           <p>
             Mensais ({result.mesesObra}x): <strong>{money(result.mensalValor)}</strong> cada
           </p>

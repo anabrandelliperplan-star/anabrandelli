@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Development, DevelopmentStatus } from "@/lib/types";
+import { parsePriceInput } from "@/lib/format";
 import { Icon, ICON_MINIMIZE } from "@/lib/icons";
 import { TypologyTableEditor } from "./TypologyTableEditor";
 import { MultiPhotoField } from "./PhotoUploader";
@@ -100,10 +101,9 @@ export function DevelopmentEditor({
           onChange={(v) => set("statusDetail", v)}
         />
         <Field
-          label="Valor a partir de (R$) — só números, sem ponto nem vírgula (ex.: 548717)"
+          label="Valor a partir de (R$) — ex.: 548.717 ou 548717"
           value={draft.priceFrom}
-          type="number"
-          onChange={(v) => set("priceFrom", Number(v) || 0)}
+          onChange={(v) => set("priceFrom", parsePriceInput(v))}
         />
         <Field
           label="Unidades disponíveis (ex.: 8 disponíveis)"
