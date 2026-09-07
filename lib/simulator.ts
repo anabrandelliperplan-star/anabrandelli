@@ -9,6 +9,7 @@ export function splitObraPercent(split: SplitOption): number {
 
 export interface SimulatorInput {
   valorImovel: number;
+  areaM2: number;
   split: SplitOption;
   ato: number;
   sinal: number; // valor de cada um dos 3 sinais (30/60/90 dias)
@@ -22,6 +23,8 @@ export interface SimulatorInput {
 
 export interface SimulatorResult {
   valorImovel: number;
+  areaM2: number;
+  valorPorM2: number; // 0 se areaM2 <= 0
   valorObra: number;
   valorFinanciamento: number;
   ato: number;
@@ -55,8 +58,12 @@ export function simulate(input: SimulatorInput, settings: SimulatorSettings): Si
   const minAtoValor = round2((valorObra * settings.percMinAto) / 100);
   const atoAbaixoDoMinimo = input.ato < minAtoValor;
 
+  const valorPorM2 = input.areaM2 > 0 ? round2(input.valorImovel / input.areaM2) : 0;
+
   return {
     valorImovel: input.valorImovel,
+    areaM2: input.areaM2,
+    valorPorM2,
     valorObra,
     valorFinanciamento,
     ato: input.ato,
@@ -82,10 +89,19 @@ export function money(n: number): string {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+// Área usa vírgula como separador decimal ("84,50"), diferente dos campos de
+// dinheiro (que usam ponto como separador de milhar, sem decimais).
+export function parseAreaInput(raw: string): number {
+  const cleaned = String(raw || "").replace(/[^\d,]/g, "").replace(",", ".");
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : 0;
+}
+
 export function buildWhatsAppText(input: SimulatorInput, result: SimulatorResult): string {
   const lines: string[] = [];
   if (input.unidadeLabel.trim()) lines.push(input.unidadeLabel.trim());
   lines.push(`Valor do imóvel: ${money(result.valorImovel)}`);
+  if (result.areaM2 > 0) lines.push(`Área: ${result.areaM2.toLocaleString("pt-BR")} m² (${money(result.valorPorM2)}/m²)`);
   lines.push(`Split: ${input.split.replace("/", "% obra / ")}% financiamento`);
   lines.push("");
   lines.push(`Período de obra (${money(result.valorObra)}):`);

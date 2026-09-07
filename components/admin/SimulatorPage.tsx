@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { SimulatorSettings } from "@/lib/types";
 import { parsePriceInput } from "@/lib/format";
-import { SPLIT_OPTIONS, buildWhatsAppText, money, simulate, type SimulatorInput, type SplitOption } from "@/lib/simulator";
+import { SPLIT_OPTIONS, buildWhatsAppText, money, parseAreaInput, simulate, type SimulatorInput, type SplitOption } from "@/lib/simulator";
 
 // Campos de dinheiro usam type="text" + parsePriceInput -- um <input type="number">
 // interpreta "587.354" como 587,354 (ponto = decimal), não como milhar
@@ -114,6 +114,7 @@ function SettingsSection({
 
 const EMPTY_INPUT: SimulatorInput = {
   valorImovel: 0,
+  areaM2: 0,
   split: "20/80",
   ato: 0,
   sinal: 0,
@@ -172,6 +173,15 @@ export function SimulatorPage({ initialSettings }: { initialSettings: SimulatorS
           <input type="text" value={input.unidadeLabel} onChange={(e) => set("unidadeLabel", e.target.value)} />
         </div>
         <MoneyField label="Valor do imóvel (R$)" value={input.valorImovel} onChange={(v) => set("valorImovel", v)} />
+        <div className="field">
+          <label>Área (m²) -- opcional, ex.: 84,50</label>
+          <input
+            type="text"
+            inputMode="decimal"
+            value={input.areaM2 ? input.areaM2.toLocaleString("pt-BR") : ""}
+            onChange={(e) => set("areaM2", parseAreaInput(e.target.value))}
+          />
+        </div>
         <div className="field">
           <label>Split (obra / financiamento)</label>
           <select value={input.split} onChange={(e) => set("split", e.target.value as SplitOption)}>
@@ -264,6 +274,11 @@ export function SimulatorPage({ initialSettings }: { initialSettings: SimulatorS
           <p>
             Valor do imóvel: <strong>{money(result.valorImovel)}</strong>
           </p>
+          {result.areaM2 > 0 ? (
+            <p>
+              Área: <strong>{result.areaM2.toLocaleString("pt-BR")} m²</strong> ({money(result.valorPorM2)}/m²)
+            </p>
+          ) : null}
           <p>
             Split: <strong>{input.split.replace("/", "% obra / ")}% financiamento</strong>
           </p>
