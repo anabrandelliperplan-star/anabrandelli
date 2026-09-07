@@ -142,7 +142,8 @@
   .badge::before{ content:""; width:0.4em; height:0.4em; border-radius:999px; background:currentColor; flex-shrink:0; }
   .badge-ready{ background:var(--accent); color:var(--accent-ink); font-weight:800; box-shadow:0 2px 10px rgba(0,0,0,.35); }
   .badge-ready::before{ background:var(--accent-ink); }
-  .badge-progress{ background:var(--badge-progress-bg); color:var(--badge-progress-text); }
+  .badge-progress{ background:var(--badge-progress-text); color:#2a1a05; font-weight:800; box-shadow:0 2px 10px rgba(0,0,0,.35); }
+  .badge-progress::before{ background:#2a1a05; }
   .badge-launch{ background:var(--badge-launch-bg); color:var(--badge-launch-text); }
 
   .card-specs{ display:flex; flex-direction:column; gap:0.75rem; }
