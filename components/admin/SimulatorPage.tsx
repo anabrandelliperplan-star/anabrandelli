@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Development, SimulatorSettings } from "@/lib/types";
-import { formatDeliveryDate, parseDeliveryToYearMonth } from "@/lib/format";
+import { formatDeliveryDate, parseDeliveryToYearMonth, waLink } from "@/lib/format";
 import {
   SPLIT_OPTIONS,
   addMonths,
@@ -72,6 +72,7 @@ interface DevDatesDraft {
   simSinal1Mes: string;
   simSinal2Mes: string;
   simSinal3Mes: string;
+  simMesesObra: number;
 }
 
 function DevDatesSection({
@@ -86,6 +87,7 @@ function DevDatesSection({
     simSinal1Mes: dev.simSinal1Mes,
     simSinal2Mes: dev.simSinal2Mes,
     simSinal3Mes: dev.simSinal3Mes,
+    simMesesObra: dev.simMesesObra,
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -126,9 +128,17 @@ function DevDatesSection({
       <MonthField label="Data do Sinal 1 (mês/ano)" value={draft.simSinal1Mes} onChange={(v) => setField("simSinal1Mes", v)} />
       <MonthField label="Data do Sinal 2 (mês/ano)" value={draft.simSinal2Mes} onChange={(v) => setField("simSinal2Mes", v)} />
       <MonthField label="Data do Sinal 3 (mês/ano)" value={draft.simSinal3Mes} onChange={(v) => setField("simSinal3Mes", v)} />
+      <div className="field">
+        <label>Quantidade de mensais</label>
+        <input
+          type="number"
+          value={draft.simMesesObra}
+          onChange={(e) => setField("simMesesObra", Number(e.target.value) || 0)}
+        />
+      </div>
       <p className="sm:col-span-2 text-xs" style={{ color: "var(--text-2)" }}>
-        Mensais começam automaticamente no mês seguinte ao Sinal 3. Anuais e parcela única não podem cair depois da
-        data de entrega. Nenhum dos dois precisa ser configurado à parte.
+        Mensais começam automaticamente no mês seguinte ao Sinal 3. Anuais, parcela única e o fim das mensais não
+        podem cair depois da data de entrega -- isso é checado sozinho, avisando se ultrapassar.
       </p>
       <div className="sm:col-span-2 flex items-center gap-3">
         <button className="btn btn-outline btn-sm" style={{ color: "var(--accent)", borderColor: "var(--accent)" }} onClick={save} disabled={saving} type="button">
@@ -237,6 +247,7 @@ export function SimulatorPage({
   const [input, setInput] = useState<SimulatorInput>(EMPTY_INPUT);
   const [selectedDevId, setSelectedDevId] = useState("");
   const [copied, setCopied] = useState(false);
+  const [clientPhone, setClientPhone] = useState("");
 
   const selectedDev = devList.find((d) => d.id === selectedDevId) || null;
 
@@ -268,6 +279,7 @@ export function SimulatorPage({
       sinal3Mes,
       // Mensais começam automaticamente no mês seguinte ao Sinal 3.
       mensalInicioMes: sinal3Mes ? addMonths(sinal3Mes, 1) : "",
+      mesesObra: selectedDev?.simMesesObra || 0,
       entregaMes: (selectedDev && parseDeliveryToYearMonth(selectedDev.statusDetail)) || "",
     };
   }, [selectedDev]);
@@ -363,7 +375,7 @@ export function SimulatorPage({
               onChange={(v) => set("mensalValor", v)}
             />
             <p className="text-xs self-end pb-2" style={{ color: "var(--text-2)" }}>
-              Quantidade calculada automaticamente: meses entre hoje e a entrega ({formatMonthYear(dates.entregaMes) || "sem data de entrega"}). Diminui sozinha a cada mês que passa.
+              Quantidade definida nas datas deste empreendimento, acima. Entrega cadastrada: {formatMonthYear(dates.entregaMes) || "não informada"}.
             </p>
 
             {settings.allowAnuais ? (
@@ -502,9 +514,28 @@ export function SimulatorPage({
             </div>
           </div>
 
-          <button className="btn btn-brand btn-sm" onClick={copyToWhatsApp} type="button">
-            {copied ? "Copiado!" : "Copiar para WhatsApp"}
-          </button>
+          <div className="admin-row p-4 flex flex-wrap items-end gap-3">
+            <div className="field" style={{ flex: 1, minWidth: "12rem" }}>
+              <label>Número do cliente (WhatsApp, com DDI+DDD)</label>
+              <input type="text" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder="ex.: 5516999998888" />
+            </div>
+            <a
+              className="btn btn-brand btn-sm"
+              href={clientPhone ? waLink(clientPhone, buildWhatsAppText(input, result, dates)) : undefined}
+              target="_blank"
+              rel="noopener"
+              aria-disabled={!clientPhone}
+              onClick={(e) => {
+                if (!clientPhone) e.preventDefault();
+              }}
+              style={!clientPhone ? { opacity: 0.5, cursor: "default" } : undefined}
+            >
+              Enviar pelo WhatsApp
+            </a>
+            <button className="btn btn-outline btn-sm" style={{ color: "var(--accent)", borderColor: "var(--accent)" }} onClick={copyToWhatsApp} type="button">
+              {copied ? "Copiado!" : "Copiar texto"}
+            </button>
+          </div>
         </>
       ) : (
         <p className="text-sm" style={{ color: "var(--text-2)" }}>

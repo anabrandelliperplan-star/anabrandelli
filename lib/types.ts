@@ -37,6 +37,7 @@ export interface Development {
   simSinal1Mes: string;
   simSinal2Mes: string;
   simSinal3Mes: string;
+  simMesesObra: number; // quantidade de mensais -- varia de empreendimento pra empreendimento
 }
 
 export interface Settings {

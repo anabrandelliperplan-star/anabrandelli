@@ -13,7 +13,8 @@ export interface DevSimDates {
   sinal2Mes: string;
   sinal3Mes: string;
   mensalInicioMes: string;
-  entregaMes: string; // "YYYY-MM" -- extraída da data de entrega do empreendimento
+  mesesObra: number; // quantidade de mensais -- configurada por empreendimento, varia de um pro outro
+  entregaMes: string; // "YYYY-MM" -- extraída da data de entrega do empreendimento, só para o aviso de limite
 }
 
 export interface SimulatorInput {
@@ -45,7 +46,7 @@ export interface SimulatorResult {
   sinalTotal: number;
   anuaisTotal: number;
   unicaTotal: number;
-  mesesObra: number; // calculado: meses entre hoje e a entrega -- diminui sozinho com o tempo
+  mesesObra: number; // configurado por empreendimento -- varia de um pro outro
   mensalValor: number;
   mensalTotal: number; // mensalValor * mesesObra
   totalColetadoObra: number; // ato + sinais + anuais + unica + mensais
@@ -66,8 +67,7 @@ export function simulate(input: SimulatorInput, dates: DevSimDates): SimulatorRe
   const anuaisTotal = input.anuaisAtivo ? round2(input.anuaisQuantidade * input.anuaisValor) : 0;
   const unicaTotal = input.unicaAtivo ? round2(input.unicaValor) : 0;
 
-  const hoje = currentYearMonth();
-  const mesesObra = dates.entregaMes ? Math.max(0, monthDiff(hoje, dates.entregaMes)) : 0;
+  const mesesObra = dates.mesesObra;
   const mensalTotal = round2(input.mensalValor * mesesObra);
 
   const totalColetadoObra = round2(input.ato + sinalTotal + anuaisTotal + unicaTotal + mensalTotal);
@@ -170,18 +170,6 @@ export function addMonths(yyyyMm: string, months: number): string {
 // direto no formato "YYYY-MM").
 export function compareMonth(a: string, b: string): number {
   return a === b ? 0 : a > b ? 1 : -1;
-}
-
-// Quantos meses de "a" até "b" (b - a). Ex.: 2026-01 -> 2026-04 = 3.
-export function monthDiff(a: string, b: string): number {
-  const [ay, am] = a.split("-").map(Number);
-  const [by, bm] = b.split("-").map(Number);
-  return (by * 12 + (bm - 1)) - (ay * 12 + (am - 1));
-}
-
-export function currentYearMonth(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
 export function buildWhatsAppText(input: SimulatorInput, result: SimulatorResult, dates: DevSimDates): string {
