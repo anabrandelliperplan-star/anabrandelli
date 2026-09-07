@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSessionToken, sessionCookieOptions, SESSION_COOKIE_NAME } from "@/lib/session";
 import { verifyPassword } from "@/lib/password";
-import { getLoginRatelimit } from "@/lib/ratelimit";
+import { checkLoginRateLimit } from "@/lib/ratelimit";
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  const { success } = await getLoginRatelimit().limit(ip);
+  const { success } = await checkLoginRateLimit(ip);
   if (!success) {
     return NextResponse.json({ error: "Muitas tentativas. Tente novamente em alguns minutos." }, { status: 429 });
   }

@@ -1,7 +1,7 @@
 // Migração única: lê os dados ao vivo do index-v3.html (Claude Artifact),
 // externaliza as fotos em base64 para o Vercel Blob, tira a senha do JSON
-// (vira hash bcrypt em variável de ambiente) e grava o resultado no Upstash
-// Redis. Rodar uma vez, depois que Redis + Blob já estiverem provisionados:
+// (vira hash bcrypt em variável de ambiente) e grava o resultado no Redis.
+// Rodar uma vez, depois que Redis + Blob já estiverem provisionados:
 //
 //   node --env-file=.env.local scripts/migrate.mjs
 //
@@ -10,7 +10,7 @@
 
 import { readFileSync } from "node:fs";
 import { put } from "@vercel/blob";
-import { Redis } from "@upstash/redis";
+import Redis from "ioredis";
 import bcrypt from "bcryptjs";
 
 const SOURCE_HTML_PATH = new URL("../../index-v3.html", import.meta.url);
@@ -26,8 +26,9 @@ async function uploadIfBase64(value, blobPath) {
   const [, mime, base64] = value.match(/^data:([^;]+);base64,(.*)$/s) || [];
   if (!base64) return value;
   const buffer = Buffer.from(base64, "base64");
-  const blob = await put(blobPath, buffer, { access: "public", contentType: mime, addRandomSuffix: true });
-  return blob.url;
+  // Store é privado -- guarda a URL da rota /api/media (proxy), nao a URL direta do Blob.
+  const blob = await put(blobPath, buffer, { access: "private", contentType: mime, addRandomSuffix: true });
+  return `/api/media/${blob.pathname}`;
 }
 
 async function main() {
@@ -60,14 +61,18 @@ async function main() {
     console.log(`  ${dev.id}: ${uploaded.length} foto(s) migrada(s)`);
   }
 
-  const redis = Redis.fromEnv();
-  await redis.set("hub:data", data);
+  const redisUrl = process.env.REDIS_URL;
+  if (!redisUrl) throw new Error("REDIS_URL não configurado -- rode com `vercel env pull .env.local` antes");
+  const redis = new Redis(redisUrl);
+  const serialized = JSON.stringify(data);
+  await redis.set("hub:data", serialized);
 
   // Confere: lê de volta e compara
   const readBack = await redis.get("hub:data");
-  const matches = JSON.stringify(readBack) === JSON.stringify(data);
+  const matches = readBack === serialized;
   console.log("Leitura de volta bate com o gravado:", matches);
   if (!matches) throw new Error("Divergência na verificação pós-gravação -- não prossiga com o deploy");
+  redis.disconnect();
 
   console.log("\nHash da senha (gere a env var com este valor):");
   console.log("ADMIN_PASSWORD_HASH=" + passwordHash);

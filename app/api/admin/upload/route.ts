@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
         return {
           allowedContentTypes: ["image/jpeg", "image/png", "image/webp"],
           addRandomSuffix: true,
+          access: "private",
         };
       },
       onUploadCompleted: async () => {},
