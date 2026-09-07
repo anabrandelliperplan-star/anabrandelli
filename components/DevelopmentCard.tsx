@@ -94,7 +94,7 @@ export function DevelopmentCard({ dev, whatsapp }: { dev: Development; whatsapp:
           rel="noopener"
         >
           <Icon html={ICON_WHATSAPP} />
-          Falar sobre {dev.name.split(" ")[0]}
+          Falar sobre {dev.name}
         </a>
       </div>
     </article>
