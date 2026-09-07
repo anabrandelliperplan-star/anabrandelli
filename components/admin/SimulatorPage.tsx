@@ -8,9 +8,11 @@ import {
   SPLIT_OPTIONS,
   addMonths,
   buildWhatsAppText,
+  compareMonth,
   formatMoneyInputValue,
   formatMonthYear,
   money,
+  monthDiff,
   parseAreaInput,
   parseMoneyInput,
   simulate,
@@ -73,16 +75,27 @@ function MonthField({
   value,
   onChange,
   disabled,
+  max,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   disabled?: boolean;
+  max?: string; // "YYYY-MM" -- trava de verdade, não deixa escolher nem digitar depois disso
 }) {
   return (
     <div className="field">
       <label>{label}</label>
-      <input type="month" disabled={disabled} value={value} onChange={(e) => onChange(e.target.value)} />
+      <input
+        type="month"
+        disabled={disabled}
+        value={value}
+        max={max}
+        onChange={(e) => {
+          const v = e.target.value;
+          onChange(max && v && compareMonth(v, max) > 0 ? max : v);
+        }}
+      />
     </div>
   );
 }
@@ -136,6 +149,8 @@ function DevDatesSection({
   }
 
   const entregaMes = parseDeliveryToYearMonth(dev.statusDetail);
+  const mensalInicioMes = draft.simSinal3Mes ? addMonths(draft.simSinal3Mes, 1) : "";
+  const maxMesesObra = entregaMes && mensalInicioMes ? Math.max(0, monthDiff(mensalInicioMes, entregaMes) + 1) : undefined;
 
   return (
     <div className="admin-row p-4 grid gap-3 sm:grid-cols-2 mb-6">
@@ -149,16 +164,20 @@ function DevDatesSection({
       <MonthField label="Data do Sinal 2 (mês/ano)" value={draft.simSinal2Mes} onChange={(v) => setField("simSinal2Mes", v)} />
       <MonthField label="Data do Sinal 3 (mês/ano)" value={draft.simSinal3Mes} onChange={(v) => setField("simSinal3Mes", v)} />
       <div className="field">
-        <label>Quantidade de mensais</label>
+        <label>Quantidade de mensais{maxMesesObra !== undefined ? ` (máximo ${maxMesesObra}, até a entrega)` : ""}</label>
         <input
           type="number"
+          max={maxMesesObra}
           value={draft.simMesesObra}
-          onChange={(e) => setField("simMesesObra", Number(e.target.value) || 0)}
+          onChange={(e) => {
+            const v = Number(e.target.value) || 0;
+            setField("simMesesObra", maxMesesObra !== undefined ? Math.min(v, maxMesesObra) : v);
+          }}
         />
       </div>
       <p className="sm:col-span-2 text-xs" style={{ color: "var(--text-2)" }}>
-        Mensais começam automaticamente no mês seguinte ao Sinal 3. Anuais, parcela única e o fim das mensais não
-        podem cair depois da data de entrega -- isso é checado sozinho, avisando se ultrapassar.
+        Mensais começam automaticamente no mês seguinte ao Sinal 3. Anuais, parcela única e a quantidade de mensais
+        não podem passar da data de entrega -- isso é travado sozinho.
       </p>
       <div className="sm:col-span-2 flex items-center gap-3">
         <button className="btn btn-outline btn-sm" style={{ color: "var(--accent)", borderColor: "var(--accent)" }} onClick={save} disabled={saving} type="button">
@@ -430,7 +449,15 @@ export function SimulatorPage({
                       type="number"
                       disabled={!input.anuaisAtivo}
                       value={input.anuaisQuantidade}
-                      onChange={(e) => set("anuaisQuantidade", Number(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const qtd = Number(e.target.value) || 0;
+                        setInput((i) => {
+                          const maxInicio = dates.entregaMes ? addMonths(dates.entregaMes, -(Math.max(1, qtd) - 1) * 12) : "";
+                          const inicio = maxInicio && i.anuaisInicioMes && compareMonth(i.anuaisInicioMes, maxInicio) > 0 ? maxInicio : i.anuaisInicioMes;
+                          return { ...i, anuaisQuantidade: qtd, anuaisInicioMes: inicio };
+                        });
+                        setCopied(false);
+                      }}
                     />
                   </div>
                   <div style={{ flex: 1 }}>
@@ -442,6 +469,7 @@ export function SimulatorPage({
                   value={input.anuaisInicioMes}
                   onChange={(v) => set("anuaisInicioMes", v)}
                   disabled={!input.anuaisAtivo}
+                  max={dates.entregaMes ? addMonths(dates.entregaMes, -(Math.max(1, input.anuaisQuantidade) - 1) * 12) : undefined}
                 />
               </>
             ) : null}
@@ -460,7 +488,13 @@ export function SimulatorPage({
                 </div>
                 <div />
                 <MoneyField label="Valor (R$)" value={input.unicaValor} onChange={(v) => set("unicaValor", v)} disabled={!input.unicaAtivo} />
-                <MonthField label="Cai em (mês/ano)" value={input.unicaMes} onChange={(v) => set("unicaMes", v)} disabled={!input.unicaAtivo} />
+                <MonthField
+                  label="Cai em (mês/ano)"
+                  value={input.unicaMes}
+                  onChange={(v) => set("unicaMes", v)}
+                  disabled={!input.unicaAtivo}
+                  max={dates.entregaMes || undefined}
+                />
               </>
             ) : null}
           </div>

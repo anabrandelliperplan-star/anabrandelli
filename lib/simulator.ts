@@ -172,6 +172,13 @@ export function compareMonth(a: string, b: string): number {
   return a === b ? 0 : a > b ? 1 : -1;
 }
 
+// Quantos meses de "a" até "b" (b - a). Ex.: 2026-01 -> 2026-04 = 3.
+export function monthDiff(a: string, b: string): number {
+  const [ay, am] = a.split("-").map(Number);
+  const [by, bm] = b.split("-").map(Number);
+  return by * 12 + (bm - 1) - (ay * 12 + (am - 1));
+}
+
 export function buildWhatsAppText(input: SimulatorInput, result: SimulatorResult, dates: DevSimDates): string {
   const lines: string[] = [];
   if (input.developmentName.trim()) lines.push(input.developmentName.trim());
