@@ -149,7 +149,10 @@
   .spec{ min-width:0; }
   .spec-label{ display:flex; align-items:center; gap:0.35rem; font-size:0.66rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:700; color:var(--text-3); }
   .spec-label svg{ flex-shrink:0; }
-  .spec-value{ margin-top:0.3rem; font-size:0.85rem; font-weight:600; color:var(--text); white-space:pre-line; line-height:1.35; }
+  .spec-value{
+    margin-top:0.3rem; font-size:0.85rem; font-weight:600; color:var(--text); white-space:pre-line; line-height:1.35;
+    min-height:calc(0.85rem * 1.35 * 4);
+  }
   .spec.is-empty{ visibility:hidden; }
   .premio-chip{
     display:flex; align-items:flex-start; gap:0.45rem; font-family:var(--font-space-grotesk), sans-serif; font-weight:700;
