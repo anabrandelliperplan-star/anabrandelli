@@ -21,16 +21,16 @@ const HUB_KEY = "hub:data";
 const ADMIN_PASSWORD_HASH_KEY = "hub:admin_password_hash";
 
 const DEFAULT_SIMULATOR_SETTINGS = {
-  mesesObra: 18,
   allowAnuais: true,
   allowParcelaUnica: true,
-  atoMes: "",
-  sinal1Mes: "",
-  sinal2Mes: "",
-  sinal3Mes: "",
-  mensalLimiteMes: "",
-  anuaisLimiteMes: "",
-  unicaLimiteMes: "",
+};
+
+const DEFAULT_DEV_SIM_DATES = {
+  simAtoMes: "",
+  simSinal1Mes: "",
+  simSinal2Mes: "",
+  simSinal3Mes: "",
+  simMensalInicioMes: "",
 };
 
 const EMPTY_DATA: HubData = {
@@ -55,6 +55,7 @@ export async function getData(): Promise<HubData> {
   // Dado salvo antes de campos novos existirem não os tem -- completa com o padrão,
   // preservando o que já foi configurado.
   data.simulatorSettings = { ...DEFAULT_SIMULATOR_SETTINGS, ...data.simulatorSettings };
+  data.developments = data.developments.map((dev) => ({ ...DEFAULT_DEV_SIM_DATES, ...dev }));
   return data;
 }
 

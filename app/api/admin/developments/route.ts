@@ -27,6 +27,11 @@ export async function POST() {
     photos: [],
     typologies: [],
     hidden: false,
+    simAtoMes: "",
+    simSinal1Mes: "",
+    simSinal2Mes: "",
+    simSinal3Mes: "",
+    simMensalInicioMes: "",
   };
   data.developments.push(dev);
   await saveData(data);

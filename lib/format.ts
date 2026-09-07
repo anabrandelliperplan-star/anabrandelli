@@ -68,6 +68,22 @@ export function formatDeliveryDate(raw: string | null | undefined): string {
   return MONTH_ABBR[monthIdx] + "/" + year;
 }
 
+// Mesma lógica de reconhecimento de mês/ano do formatDeliveryDate acima, mas
+// devolvendo "YYYY-MM" (para contas de calendário) em vez do texto "abr/2027".
+export function parseDeliveryToYearMonth(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const s = stripAccents(String(raw)).toLowerCase().replace(/\\/g, "/").trim();
+  const m = s.match(/([a-z]{3,9})\s*(?:de)?\s*[\/\-]?\s*(\d{2,4})/);
+  if (!m) return null;
+  const monthToken = m[1];
+  let year = m[2];
+  let monthIdx = MONTH_ABBR.indexOf(monthToken.slice(0, 3));
+  if (monthIdx === -1) monthIdx = MONTH_FULL.indexOf(monthToken);
+  if (monthIdx === -1) return null;
+  if (year.length === 2) year = "20" + year;
+  return `${year}-${String(monthIdx + 1).padStart(2, "0")}`;
+}
+
 // Remove separador de milhar brasileiro ("548.717") antes de converter para
 // numero -- Number() direto interpretaria o ponto como decimal.
 export function parsePriceInput(raw: string): number {

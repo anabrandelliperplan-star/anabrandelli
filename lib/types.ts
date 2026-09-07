@@ -30,6 +30,12 @@ export interface Development {
   photos: string[];
   typologies: TypologyColumn[];
   hidden: boolean;
+  // Datas do simulador de fluxo -- fixas por empreendimento, "YYYY-MM".
+  simAtoMes: string;
+  simSinal1Mes: string;
+  simSinal2Mes: string;
+  simSinal3Mes: string;
+  simMensalInicioMes: string;
 }
 
 export interface Settings {
@@ -44,16 +50,8 @@ export interface Settings {
 }
 
 export interface SimulatorSettings {
-  mesesObra: number;
   allowAnuais: boolean;
   allowParcelaUnica: boolean;
-  atoMes: string; // "YYYY-MM" -- fixado aqui, não muda por simulação
-  sinal1Mes: string;
-  sinal2Mes: string;
-  sinal3Mes: string;
-  mensalLimiteMes: string; // "YYYY-MM" -- mensais não podem terminar depois disso
-  anuaisLimiteMes: string;
-  unicaLimiteMes: string;
 }
 
 export interface HubData {
