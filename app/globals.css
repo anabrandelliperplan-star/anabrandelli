@@ -165,6 +165,12 @@
     overflow:hidden; min-height:calc(1.4em * 3);
   }
   .description-text.is-empty{ visibility:hidden; }
+  .description-text.is-expanded{ display:block; overflow:visible; min-height:0; }
+  .description-toggle{
+    margin-top:0.3rem; font-size:0.78rem; font-weight:700; color:var(--accent-text);
+    background:none; border:none; padding:0; cursor:pointer; font-family:var(--font-space-grotesk), sans-serif;
+  }
+  .description-toggle:hover{ text-decoration:underline; }
   .materials-grid{ display:grid; gap:0.5rem; grid-template-columns:repeat(auto-fit, minmax(9rem, 1fr)); }
   .materials-grid .btn{ align-items:flex-start; justify-content:flex-start; text-align:left; }
   .materials-grid .btn svg{ flex-shrink:0; margin-top:0.15em; }

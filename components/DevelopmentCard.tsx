@@ -5,6 +5,7 @@ import { Icon, ICON_BUILDING, ICON_CALENDAR, ICON_PAYMENT, ICON_TROPHY, ICON_WHA
 import { MaterialButtons } from "./MaterialButtons";
 import { TypologyDetails } from "./TypologyDetails";
 import { Carousel } from "./Carousel";
+import { DescriptionText } from "./DescriptionText";
 
 function photosOf(dev: Development): string[] {
   return dev.photos && dev.photos.length ? dev.photos : [];
@@ -52,9 +53,7 @@ export function DevelopmentCard({ dev, whatsapp }: { dev: Development; whatsapp:
           </p>
           <h3 className="font-display font-bold text-lg mt-1 leading-snug">{dev.name}</h3>
         </div>
-        <p id={"desc-" + dev.id} className={"description-text" + (dev.descricao?.trim() ? "" : " is-empty")}>
-          {dev.descricao?.trim() ? dev.descricao : "·"}
-        </p>
+        <DescriptionText id={"desc-" + dev.id} text={dev.descricao} />
         <SpecsRow dev={dev} />
         <div id={"premio-" + dev.id} className={"premio-chip" + (dev.premiacao ? "" : " is-empty")}>
           {dev.premiacao ? (
