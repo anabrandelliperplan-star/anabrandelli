@@ -47,6 +47,13 @@ export interface SimulatorSettings {
   mesesObra: number;
   allowAnuais: boolean;
   allowParcelaUnica: boolean;
+  atoMes: string; // "YYYY-MM" -- fixado aqui, não muda por simulação
+  sinal1Mes: string;
+  sinal2Mes: string;
+  sinal3Mes: string;
+  mensalLimiteMes: string; // "YYYY-MM" -- mensais não podem terminar depois disso
+  anuaisLimiteMes: string;
+  unicaLimiteMes: string;
 }
 
 export interface HubData {

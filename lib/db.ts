@@ -24,6 +24,13 @@ const DEFAULT_SIMULATOR_SETTINGS = {
   mesesObra: 18,
   allowAnuais: true,
   allowParcelaUnica: true,
+  atoMes: "",
+  sinal1Mes: "",
+  sinal2Mes: "",
+  sinal3Mes: "",
+  mensalLimiteMes: "",
+  anuaisLimiteMes: "",
+  unicaLimiteMes: "",
 };
 
 const EMPTY_DATA: HubData = {
@@ -45,8 +52,9 @@ export async function getData(): Promise<HubData> {
   const raw = await redis().get(HUB_KEY);
   if (!raw) return EMPTY_DATA;
   const data = JSON.parse(raw) as HubData;
-  // Dado salvo antes do simulador existir não tem esse campo -- completa com o padrão.
-  if (!data.simulatorSettings) data.simulatorSettings = DEFAULT_SIMULATOR_SETTINGS;
+  // Dado salvo antes de campos novos existirem não os tem -- completa com o padrão,
+  // preservando o que já foi configurado.
+  data.simulatorSettings = { ...DEFAULT_SIMULATOR_SETTINGS, ...data.simulatorSettings };
   return data;
 }
 

@@ -12,13 +12,16 @@ export interface SimulatorInput {
   areaM2: number;
   split: SplitOption;
   ato: number;
-  sinal: number; // valor de cada um dos 3 sinais (30/60/90 dias)
+  sinal: number; // valor de cada um dos 3 sinais -- as datas são fixas, vêm das configurações
+  mensalValor: number;
+  mensalInicioMes: string; // "YYYY-MM" -- quando a 1ª mensal cai
   anuaisAtivo: boolean;
   anuaisQuantidade: number;
-  anuaisValor: number; // valor de cada parcela anual
+  anuaisValor: number;
+  anuaisInicioMes: string; // "YYYY-MM" -- quando a 1ª anual cai
   unicaAtivo: boolean;
   unicaValor: number;
-  mensalValor: number; // valor de cada mensal -- digitado livremente, não é mais calculado
+  unicaMes: string; // "YYYY-MM" -- quando a parcela única cai
   unidadeLabel: string; // ex.: "Unidade 142 - Torre Cerejeira | 84,50 m²" (preenchido manualmente por enquanto)
 }
 
@@ -38,6 +41,11 @@ export interface SimulatorResult {
   mensalTotal: number; // mensalValor * mesesObra
   totalColetadoObra: number; // ato + sinais + anuais + unica + mensais
   saldoFaltante: number; // valorObra - totalColetadoObra; positivo = falta dinheiro, negativo = sobrou
+  mensalFimMes: string;
+  mensalExcedeuLimite: boolean;
+  anuaisFimMes: string;
+  anuaisExcedeuLimite: boolean;
+  unicaExcedeuLimite: boolean;
 }
 
 export function simulate(input: SimulatorInput, settings: SimulatorSettings): SimulatorResult {
@@ -55,6 +63,21 @@ export function simulate(input: SimulatorInput, settings: SimulatorSettings): Si
 
   const valorPorM2 = input.areaM2 > 0 ? round2(input.valorImovel / input.areaM2) : 0;
 
+  const mensalFimMes = input.mensalInicioMes ? addMonths(input.mensalInicioMes, settings.mesesObra - 1) : "";
+  const mensalExcedeuLimite = Boolean(
+    settings.mensalLimiteMes && mensalFimMes && compareMonth(mensalFimMes, settings.mensalLimiteMes) > 0
+  );
+
+  const anuaisFimMes =
+    input.anuaisAtivo && input.anuaisInicioMes ? addMonths(input.anuaisInicioMes, (input.anuaisQuantidade - 1) * 12) : "";
+  const anuaisExcedeuLimite = Boolean(
+    input.anuaisAtivo && settings.anuaisLimiteMes && anuaisFimMes && compareMonth(anuaisFimMes, settings.anuaisLimiteMes) > 0
+  );
+
+  const unicaExcedeuLimite = Boolean(
+    input.unicaAtivo && settings.unicaLimiteMes && input.unicaMes && compareMonth(input.unicaMes, settings.unicaLimiteMes) > 0
+  );
+
   return {
     valorImovel: input.valorImovel,
     areaM2: input.areaM2,
@@ -71,6 +94,11 @@ export function simulate(input: SimulatorInput, settings: SimulatorSettings): Si
     mensalTotal,
     totalColetadoObra,
     saldoFaltante,
+    mensalFimMes,
+    mensalExcedeuLimite,
+    anuaisFimMes,
+    anuaisExcedeuLimite,
+    unicaExcedeuLimite,
   };
 }
 
@@ -90,7 +118,51 @@ export function parseAreaInput(raw: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-export function buildWhatsAppText(input: SimulatorInput, result: SimulatorResult): string {
+// Valores em R$ com centavos opcionais: "587.354,80" -- ponto é separador de
+// milhar, vírgula é decimal (padrão brasileiro). "587.354" (sem vírgula)
+// continua funcionando como valor inteiro, sem centavos.
+export function parseMoneyInput(raw: string): number {
+  const cleaned = String(raw || "").replace(/[^\d,]/g, "");
+  if (!cleaned) return 0;
+  const [intPart, centsPart] = cleaned.split(",");
+  const n = Number(intPart + (centsPart !== undefined ? "." + centsPart.slice(0, 2) : ""));
+  return Number.isFinite(n) ? n : 0;
+}
+
+export function formatMoneyInputValue(n: number): string {
+  if (!n) return "";
+  return n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+const MONTH_FULL = [
+  "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+  "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+];
+
+// "YYYY-MM" -> "Março/2026" (mesmo formato do <input type="month">)
+export function formatMonthYear(yyyyMm: string): string {
+  if (!yyyyMm) return "";
+  const [y, m] = yyyyMm.split("-").map(Number);
+  if (!y || !m) return yyyyMm;
+  const name = MONTH_FULL[m - 1] || "";
+  return name.charAt(0).toUpperCase() + name.slice(1) + "/" + y;
+}
+
+export function addMonths(yyyyMm: string, months: number): string {
+  const [y, m] = yyyyMm.split("-").map(Number);
+  const total = y * 12 + (m - 1) + months;
+  const newY = Math.floor(total / 12);
+  const newM = (total % 12) + 1;
+  return `${newY}-${String(newM).padStart(2, "0")}`;
+}
+
+// >0 se a > b, <0 se a < b, 0 se iguais (comparação lexicográfica funciona
+// direto no formato "YYYY-MM").
+export function compareMonth(a: string, b: string): number {
+  return a === b ? 0 : a > b ? 1 : -1;
+}
+
+export function buildWhatsAppText(input: SimulatorInput, result: SimulatorResult, settings: SimulatorSettings): string {
   const lines: string[] = [];
   if (input.unidadeLabel.trim()) lines.push(input.unidadeLabel.trim());
   lines.push(`Valor do imóvel: ${money(result.valorImovel)}`);
@@ -98,11 +170,14 @@ export function buildWhatsAppText(input: SimulatorInput, result: SimulatorResult
   lines.push(`Split: ${input.split.replace("/", "% obra / ")}% financiamento`);
   lines.push("");
   lines.push(`Período de obra (${money(result.valorObra)}):`);
-  lines.push(`- Ato: ${money(result.ato)}`);
-  lines.push(`- 3x Sinal (30/60/90 dias): ${money(result.sinalUnitario)} cada (total ${money(result.sinalTotal)})`);
-  if (input.anuaisAtivo) lines.push(`- Anuais (${input.anuaisQuantidade}x): ${money(input.anuaisValor)} cada (total ${money(result.anuaisTotal)})`);
-  if (input.unicaAtivo) lines.push(`- Parcela única: ${money(result.unicaTotal)}`);
-  lines.push(`- Mensais (${result.mesesObra}x): ${money(result.mensalValor)} cada (total ${money(result.mensalTotal)})`);
+  lines.push(`- Ato (${formatMonthYear(settings.atoMes)}): ${money(result.ato)}`);
+  lines.push(
+    `- Sinais (${formatMonthYear(settings.sinal1Mes)}, ${formatMonthYear(settings.sinal2Mes)}, ${formatMonthYear(settings.sinal3Mes)}): ${money(result.sinalUnitario)} cada (total ${money(result.sinalTotal)})`
+  );
+  if (input.anuaisAtivo)
+    lines.push(`- Anuais (${input.anuaisQuantidade}x a partir de ${formatMonthYear(input.anuaisInicioMes)}): ${money(input.anuaisValor)} cada (total ${money(result.anuaisTotal)})`);
+  if (input.unicaAtivo) lines.push(`- Parcela única (${formatMonthYear(input.unicaMes)}): ${money(result.unicaTotal)}`);
+  lines.push(`- Mensais (${result.mesesObra}x a partir de ${formatMonthYear(input.mensalInicioMes)}): ${money(result.mensalValor)} cada (total ${money(result.mensalTotal)})`);
   if (result.valorFinanciamento > 0) {
     lines.push("");
     lines.push(`Na entrega (financiamento bancário): ${money(result.valorFinanciamento)}`);
