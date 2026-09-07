@@ -8,6 +8,7 @@ export function splitObraPercent(split: SplitOption): number {
 }
 
 export interface SimulatorInput {
+  developmentName: string; // nome do empreendimento selecionado (opcional)
   valorImovel: number;
   areaM2: number;
   split: SplitOption;
@@ -164,6 +165,7 @@ export function compareMonth(a: string, b: string): number {
 
 export function buildWhatsAppText(input: SimulatorInput, result: SimulatorResult, settings: SimulatorSettings): string {
   const lines: string[] = [];
+  if (input.developmentName.trim()) lines.push(input.developmentName.trim());
   if (input.unidadeLabel.trim()) lines.push(input.unidadeLabel.trim());
   lines.push(`Valor do imóvel: ${money(result.valorImovel)}`);
   if (result.areaM2 > 0) lines.push(`Área: ${result.areaM2.toLocaleString("pt-BR")} m² (${money(result.valorPorM2)}/m²)`);

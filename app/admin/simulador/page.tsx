@@ -7,7 +7,7 @@ export default async function AdminSimuladorPage() {
   const data = await getData();
   return (
     <div className="mx-auto max-w-2xl lg:max-w-5xl">
-      <SimulatorPage initialSettings={data.simulatorSettings} />
+      <SimulatorPage initialSettings={data.simulatorSettings} developments={data.developments} />
     </div>
   );
 }

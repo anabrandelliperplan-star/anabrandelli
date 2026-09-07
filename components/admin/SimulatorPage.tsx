@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import type { SimulatorSettings } from "@/lib/types";
+import type { Development, SimulatorSettings } from "@/lib/types";
 import {
   SPLIT_OPTIONS,
   buildWhatsAppText,
@@ -161,6 +161,7 @@ function SettingsSection({
 }
 
 const EMPTY_INPUT: SimulatorInput = {
+  developmentName: "",
   valorImovel: 0,
   areaM2: 0,
   split: "20/80",
@@ -178,13 +179,31 @@ const EMPTY_INPUT: SimulatorInput = {
   unidadeLabel: "",
 };
 
-export function SimulatorPage({ initialSettings }: { initialSettings: SimulatorSettings }) {
+export function SimulatorPage({
+  initialSettings,
+  developments,
+}: {
+  initialSettings: SimulatorSettings;
+  developments: Development[];
+}) {
   const [settings, setSettings] = useState(initialSettings);
   const [input, setInput] = useState<SimulatorInput>(EMPTY_INPUT);
+  const [selectedDevId, setSelectedDevId] = useState("");
   const [copied, setCopied] = useState(false);
 
   function set<K extends keyof SimulatorInput>(key: K, value: SimulatorInput[K]) {
     setInput((i) => ({ ...i, [key]: value }));
+    setCopied(false);
+  }
+
+  function selectDevelopment(id: string) {
+    setSelectedDevId(id);
+    const dev = developments.find((d) => d.id === id);
+    setInput((i) => ({
+      ...i,
+      developmentName: dev ? dev.name : "",
+      valorImovel: dev ? dev.priceFrom : i.valorImovel,
+    }));
     setCopied(false);
   }
 
@@ -220,6 +239,17 @@ export function SimulatorPage({ initialSettings }: { initialSettings: SimulatorS
 
       <h3 className="font-display font-bold text-sm mb-3">Simular</h3>
       <div className="admin-row p-4 grid gap-3 sm:grid-cols-2 mb-6">
+        <div className="field sm:col-span-2">
+          <label>Empreendimento</label>
+          <select value={selectedDevId} onChange={(e) => selectDevelopment(e.target.value)}>
+            <option value="">Selecione um empreendimento (opcional)</option>
+            {developments.map((dev) => (
+              <option key={dev.id} value={dev.id}>
+                {dev.name}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="field sm:col-span-2">
           <label>Unidade (opcional -- ex.: &quot;Unidade 142 - Torre Cerejeira | 84,50 m²&quot;)</label>
           <input type="text" value={input.unidadeLabel} onChange={(e) => set("unidadeLabel", e.target.value)} />
