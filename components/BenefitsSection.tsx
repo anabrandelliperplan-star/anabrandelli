@@ -1,7 +1,7 @@
 import { Icon, ICON_HEADSET, ICON_GIFT, ICON_BOLT, ICON_REFRESH, ICON_COINS } from "@/lib/icons";
 
 const BENEFITS = [
-  { title: "Apoio em plantão", text: "Suporte presencial e remoto durante todo o atendimento ao seu cliente, para atendimentos agendados.", icon: ICON_HEADSET },
+  { title: "Apoio na Negociação", text: "Suporte presencial e remoto durante todo o atendimento ao seu cliente, para atendimentos agendados.", icon: ICON_HEADSET },
   { title: "Condições comerciais exclusivas", text: "Além da comissão, premiações e sorteios para parceiros ativos.", icon: ICON_GIFT },
   { title: "Suporte direto e ágil", text: "Resposta rápida via WhatsApp para dúvidas técnicas e comerciais.", icon: ICON_BOLT },
   { title: "Materiais sempre atualizados", text: "Fotos, books, plantas e tabelas revisados e disponíveis quando você precisar.", icon: ICON_REFRESH },
