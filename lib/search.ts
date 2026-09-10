@@ -22,7 +22,7 @@ const SEARCH_SYNONYMS: Array<[string, string[]]> = [
   ["tipologia", ["metragem", "metragens", "tamanho do apartamento", "tamanho dos apartamentos", "planta", "plantas", "metros quadrados"]],
   ["endereco", ["localizacao", "onde fica", "como chegar", "mapa"]],
   ["book", ["apresentacao", "material de apresentacao", "book do empreendimento"]],
-  ["tabela", ["tabela de vendas", "tabela de precos", "planilha de precos", "planilha"]],
+  ["tabela", ["tabela de vendas", "tabela de precos", "planilha de precos", "planilha", "espelho de vendas", "espelho de precos", "espelho de venda", "espelho"]],
   ["materiais", ["todos os arquivos", "pasta do drive", "drive", "materiais de venda", "materiais de vendas"]],
   ["premiacao", ["premio", "premios", "ganhou premio", "premiado"]],
   ["descricao", ["sobre o empreendimento", "resumo do empreendimento", "informacoes gerais"]],
@@ -63,7 +63,7 @@ export function buildSearchIndex(developments: Development[]): SearchItem[] {
     if (dev.unidadesDisponiveis) items.push({ label: "Unidades disponíveis", dev: dev.name, kind: "text", value: dev.unidadesDisponiveis, anchorId: "price-" + dev.id, cardId: "card-" + dev.id });
     if (dev.mapsLink) items.push({ label: "Endereço", dev: dev.name, kind: "link", value: "Abrir no mapa", url: resolveMapsLink(dev.mapsLink), anchorId: "maps-" + dev.id, cardId: "card-" + dev.id });
     if (dev.bookLink) items.push({ label: "Book", dev: dev.name, kind: "link", value: "Abrir book", url: driveParts(dev.bookLink)?.view || dev.bookLink, anchorId: "book-" + dev.id, cardId: "card-" + dev.id });
-    if (dev.tabelaLink) items.push({ label: "Tabela", dev: dev.name, kind: "link", value: "Abrir tabela", url: driveParts(dev.tabelaLink)?.view || dev.tabelaLink, anchorId: "tabela-" + dev.id, cardId: "card-" + dev.id });
+    if (dev.tabelaLink) items.push({ label: "Tabela e Espelho", dev: dev.name, kind: "link", value: "Abrir tabela", url: driveParts(dev.tabelaLink)?.view || dev.tabelaLink, anchorId: "tabela-" + dev.id, cardId: "card-" + dev.id });
     if (dev.driveLink) items.push({ label: "Todos os materiais", dev: dev.name, kind: "link", value: "Abrir materiais", url: driveParts(dev.driveLink)?.view || dev.driveLink, anchorId: "materiais-" + dev.id, cardId: "card-" + dev.id });
     if (dev.materialDescritivoLink) items.push({ label: "Material Descritivo", dev: dev.name, kind: "link", value: "Abrir material descritivo", url: driveParts(dev.materialDescritivoLink)?.view || dev.materialDescritivoLink, anchorId: "descritivo-" + dev.id, cardId: "card-" + dev.id });
     if (dev.vagasIndeterminadas) items.push({ label: "Memorial de Vagas", dev: dev.name, kind: "text", value: "Vagas indeterminadas", anchorId: "garagem-" + dev.id, cardId: "card-" + dev.id });

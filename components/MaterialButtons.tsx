@@ -17,7 +17,7 @@ export function MaterialButtons({ dev }: { dev: Development }) {
   const slots: Slot[] = [
     { key: "maps", icon: ICON_PIN, label: "Endereço", href: dev.mapsLink ? resolveMapsLink(dev.mapsLink) : null },
     { key: "book", icon: ICON_BOOK, label: "Book", href: dev.bookLink ? driveParts(dev.bookLink)?.view || dev.bookLink : null },
-    { key: "tabela", icon: ICON_LIST, label: "Tabela", href: dev.tabelaLink ? driveParts(dev.tabelaLink)?.view || dev.tabelaLink : null },
+    { key: "tabela", icon: ICON_LIST, label: "Tabela e Espelho", href: dev.tabelaLink ? driveParts(dev.tabelaLink)?.view || dev.tabelaLink : null },
     { key: "materiais", icon: ICON_FOLDER, label: "Todos os materiais", href: dev.driveLink ? driveParts(dev.driveLink)?.view || dev.driveLink : null },
     { key: "descritivo", icon: ICON_DOC, label: "Material Descritivo", href: dev.materialDescritivoLink ? driveParts(dev.materialDescritivoLink)?.view || dev.materialDescritivoLink : null },
     dev.vagasIndeterminadas
