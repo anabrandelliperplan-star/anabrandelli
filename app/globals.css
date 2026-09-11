@@ -215,6 +215,11 @@
   .search-box input::placeholder{ color:var(--text-2); }
   .search-clear{ border:none; background:none; color:var(--text-2); cursor:pointer; font-size:0.9rem; padding:0.2rem; line-height:1; flex-shrink:0; }
   .search-clear:hover{ color:var(--accent-text); }
+  .search-voice-error{
+    position:absolute; top:calc(100% + 0.4rem); left:0; right:0; z-index:30;
+    background:var(--badge-progress-bg); color:var(--badge-progress-text); font-size:0.8rem; font-weight:600;
+    padding:0.6rem 0.8rem; border-radius:0.6rem;
+  }
   .search-results{
     position:absolute; top:calc(100% + 0.4rem); left:0; right:0; background:var(--surface);
     border:1px solid var(--border); border-radius:0.9rem; box-shadow:0 8px 24px -8px rgba(0,0,0,0.4);

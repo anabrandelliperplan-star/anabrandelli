@@ -13,7 +13,7 @@ interface SpeechRecognitionLike {
   interimResults: boolean;
   maxAlternatives: number;
   onresult: ((event: { results: { [i: number]: { [j: number]: { transcript: string } } } }) => void) | null;
-  onerror: (() => void) | null;
+  onerror: ((event: { error?: string }) => void) | null;
   onend: (() => void) | null;
   start: () => void;
   stop: () => void;
@@ -108,6 +108,7 @@ export function SearchBar({ developments }: { developments: Development[] }) {
   const [open, setOpen] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
   const [listening, setListening] = useState(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
@@ -186,6 +187,7 @@ export function SearchBar({ developments }: { developments: Development[] }) {
   }
 
   function startListening() {
+    setVoiceError(null);
     const w = window as unknown as { SpeechRecognition?: new () => SpeechRecognitionLike; webkitSpeechRecognition?: new () => SpeechRecognitionLike };
     const Ctor = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!Ctor) return;
@@ -197,11 +199,25 @@ export function SearchBar({ developments }: { developments: Development[] }) {
       const transcript = event.results[0][0].transcript;
       onInput(transcript);
     };
-    recognition.onerror = () => setListening(false);
+    recognition.onerror = (event) => {
+      setListening(false);
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        setVoiceError("Permissão de microfone bloqueada -- ative nas configurações do navegador.");
+      } else if (event.error === "no-speech") {
+        setVoiceError("Não ouvi nada. Tenta de novo.");
+      } else {
+        setVoiceError("Não deu pra usar o microfone agora.");
+      }
+    };
     recognition.onend = () => setListening(false);
     recognitionRef.current = recognition;
-    setListening(true);
-    recognition.start();
+    try {
+      setListening(true);
+      recognition.start();
+    } catch {
+      setListening(false);
+      setVoiceError("Não deu pra usar o microfone agora.");
+    }
   }
 
   function stopListening() {
@@ -248,6 +264,7 @@ export function SearchBar({ developments }: { developments: Development[] }) {
           ✕
         </button>
       </div>
+      {voiceError ? <div className="search-voice-error">{voiceError}</div> : null}
       <div id="search-results" className="search-results" hidden={!open}>
         {answer ? (
           <SearchAnswer item={answer} onClose={() => setAnswer(null)} />
