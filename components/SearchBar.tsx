@@ -1,9 +1,23 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Development, SearchItem } from "@/lib/types";
 import { buildSearchIndex, normalizeSearch, searchItems } from "@/lib/search";
-import { Icon, ICON_SEARCH, searchIconFor } from "@/lib/icons";
+import { Icon, ICON_MIC, ICON_SEARCH, searchIconFor } from "@/lib/icons";
+
+// Reconhecimento de voz do próprio navegador (Web Speech API) -- funciona no
+// Chrome (onde os corretores usam pelo Android), sem suporte no Firefox e
+// bem limitado no Safari/iPhone. Sem chave de API, sem custo.
+interface SpeechRecognitionLike {
+  lang: string;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onresult: ((event: { results: { [i: number]: { [j: number]: { transcript: string } } } }) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
 
 function filterCardsByName(query: string) {
   const grid = document.getElementById("cards-grid");
@@ -92,7 +106,15 @@ export function SearchBar({ developments }: { developments: Development[] }) {
   const [results, setResults] = useState<SearchItem[]>([]);
   const [answer, setAnswer] = useState<SearchItem | null>(null);
   const [open, setOpen] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(false);
+  const [listening, setListening] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+
+  useEffect(() => {
+    const w = window as unknown as { SpeechRecognition?: new () => SpeechRecognitionLike; webkitSpeechRecognition?: new () => SpeechRecognitionLike };
+    setVoiceSupported(Boolean(w.SpeechRecognition || w.webkitSpeechRecognition));
+  }, []);
 
   function runQuery(q: string) {
     setAnswer(null);
@@ -163,6 +185,30 @@ export function SearchBar({ developments }: { developments: Development[] }) {
     setAnswer(item);
   }
 
+  function startListening() {
+    const w = window as unknown as { SpeechRecognition?: new () => SpeechRecognitionLike; webkitSpeechRecognition?: new () => SpeechRecognitionLike };
+    const Ctor = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!Ctor) return;
+    const recognition = new Ctor();
+    recognition.lang = "pt-BR";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      onInput(transcript);
+    };
+    recognition.onerror = () => setListening(false);
+    recognition.onend = () => setListening(false);
+    recognitionRef.current = recognition;
+    setListening(true);
+    recognition.start();
+  }
+
+  function stopListening() {
+    recognitionRef.current?.stop();
+    setListening(false);
+  }
+
   return (
     <div className="search-wrap">
       <div className="search-box">
@@ -187,6 +233,17 @@ export function SearchBar({ developments }: { developments: Development[] }) {
           onFocus={onFocus}
           onBlur={onBlur}
         />
+        {voiceSupported ? (
+          <button
+            type="button"
+            className={"search-icon-btn" + (listening ? " is-listening" : "")}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => (listening ? stopListening() : startListening())}
+            aria-label={listening ? "Parar busca por voz" : "Buscar por voz"}
+          >
+            <Icon html={ICON_MIC} />
+          </button>
+        ) : null}
         <button type="button" className="search-clear" onClick={clear} aria-label="Limpar busca">
           ✕
         </button>
