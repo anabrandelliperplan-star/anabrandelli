@@ -21,7 +21,7 @@ export async function POST() {
     materialDescritivoLink: "",
     vagasGaragemLink: "",
     vagasIndeterminadas: false,
-    temDecorado: true,
+    temDecorado: false,
     premiacao: "",
     descricao: "",
     fluxoPagamento: "",

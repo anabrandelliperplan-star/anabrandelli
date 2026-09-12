@@ -32,7 +32,9 @@ const DEFAULT_DEV_SIM_DATES = {
   simSinal3Mes: "",
   simMesesObra: 0,
   tabelaUnidades: [],
-  temDecorado: true,
+  // Só o MB Park tem decorado pra visitar -- todo o resto marca atendimento
+  // por padrão, e ela liga manualmente pros empreendimentos que tiverem.
+  temDecorado: false,
 };
 
 const EMPTY_DATA: HubData = {
