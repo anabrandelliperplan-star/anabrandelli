@@ -59,7 +59,16 @@ export async function getData(): Promise<HubData> {
   // Dado salvo antes de campos novos existirem não os tem -- completa com o padrão,
   // preservando o que já foi configurado.
   data.simulatorSettings = { ...DEFAULT_SIMULATOR_SETTINGS, ...data.simulatorSettings };
-  data.developments = data.developments.map((dev) => ({ ...DEFAULT_DEV_SIM_DATES, ...dev }));
+  data.developments = data.developments.map((dev) => {
+    // Migração pontual: dado salvo antes do campo "temDecorado" existir --
+    // só o MB Park tinha decorado pra visitar antes dessa opção existir no
+    // painel, o resto entra com o padrão (false). Uma vez que ela reabrir e
+    // salvar qualquer empreendimento pelo painel, esse valor passa a vir do
+    // que está realmente marcado ali, não mais dessa migração.
+    const hadField = Object.prototype.hasOwnProperty.call(dev, "temDecorado");
+    const migratedDecorado = hadField ? dev.temDecorado : /mb\s*park/i.test(dev.name || "");
+    return { ...DEFAULT_DEV_SIM_DATES, ...dev, temDecorado: migratedDecorado };
+  });
   return data;
 }
 
