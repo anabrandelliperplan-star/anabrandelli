@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Development } from "@/lib/types";
 import { waLink } from "@/lib/format";
+import { money } from "@/lib/simulator";
 import { extractPdfRows, parseTabelaRows, buildTabelaWhatsAppMessage, type ExtractedUnit } from "@/lib/tabela-import";
 
 function EditableCell({ value, onChange, width }: { value: string | number; onChange: (v: string) => void; width?: string }) {
@@ -29,6 +30,10 @@ export function TabelaImportPage({ developments }: { developments: Development[]
   const [devList, setDevList] = useState(developments);
   const [selectedDevId, setSelectedDevId] = useState("");
   const [units, setUnits] = useState<ExtractedUnit[]>([]);
+  // Os campos extraídos do PDF não podem ser editados -- devem sempre bater
+  // com a tabela original. Só linhas adicionadas manualmente (fora do PDF)
+  // ficam com os campos abertos pra digitar.
+  const [manualFlags, setManualFlags] = useState<boolean[]>([]);
   const [rawRows, setRawRows] = useState<string[]>([]);
   const [processing, setProcessing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -43,7 +48,9 @@ export function TabelaImportPage({ developments }: { developments: Development[]
   function selectDevelopment(id: string) {
     setSelectedDevId(id);
     const dev = devList.find((d) => d.id === id);
-    setUnits(dev?.tabelaUnidades || []);
+    const savedUnits = dev?.tabelaUnidades || [];
+    setUnits(savedUnits);
+    setManualFlags(savedUnits.map(() => false));
     setRawRows([]);
     setSelectedUnitIdx(null);
     setMessage("");
@@ -81,8 +88,10 @@ export function TabelaImportPage({ developments }: { developments: Development[]
     setSaved(false);
     try {
       const rows = await extractPdfRows(file);
+      const parsed = parseTabelaRows(rows);
       setRawRows(rows);
-      setUnits(parseTabelaRows(rows));
+      setUnits(parsed);
+      setManualFlags(parsed.map(() => false));
     } catch {
       setRawRows(["Não consegui ler esse PDF -- tenta outro arquivo."]);
     } finally {
@@ -91,7 +100,7 @@ export function TabelaImportPage({ developments }: { developments: Development[]
     }
   }
 
-  function updateUnit<K extends keyof ExtractedUnit>(idx: number, key: K, raw: string) {
+  function updateManualUnit<K extends keyof ExtractedUnit>(idx: number, key: K, raw: string) {
     setUnits((list) =>
       list.map((u, i) => {
         if (i !== idx) return u;
@@ -107,11 +116,13 @@ export function TabelaImportPage({ developments }: { developments: Development[]
       ...list,
       { unitCode: "", pavimento: "", areaM2: 0, valorUnidade: 0, ato: 0, mensal: 0, anual: 0, unica: 0, financiamento: 0 },
     ]);
+    setManualFlags((list) => [...list, true]);
     setSaved(false);
   }
 
   function removeUnit(idx: number) {
     setUnits((list) => list.filter((_, i) => i !== idx));
+    setManualFlags((list) => list.filter((_, i) => i !== idx));
     setSaved(false);
   }
 
@@ -173,84 +184,110 @@ export function TabelaImportPage({ developments }: { developments: Development[]
         </div>
       </div>
 
-      {units.length > 0 ? (
+      {selectedDev ? (
         <>
-          <h3 className="font-display font-bold text-sm mb-3">
-            Unidades encontradas ({units.length}) -- confira e corrija se algo saiu errado
-          </h3>
-          <div className="admin-row p-2 mb-6" style={{ overflowX: "auto" }}>
-            <table className="typ-table" style={{ minWidth: "60rem" }}>
-              <thead>
-                <tr>
-                  <th>Unidade</th>
-                  <th>Pavimento</th>
-                  <th>Área (m²)</th>
-                  <th>Valor</th>
-                  <th>Ato</th>
-                  <th>Mensal</th>
-                  <th>Anual</th>
-                  <th>Única</th>
-                  <th>Financiamento</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {units.map((u, idx) => (
-                  <tr key={idx} style={idx === selectedUnitIdx ? { background: "var(--surface-2)" } : undefined}>
-                    <td>
-                      <EditableCell value={u.unitCode} onChange={(v) => updateUnit(idx, "unitCode", v)} width="6rem" />
-                    </td>
-                    <td>
-                      <EditableCell value={u.pavimento} onChange={(v) => updateUnit(idx, "pavimento", v)} width="6.5rem" />
-                    </td>
-                    <td>
-                      <EditableCell value={u.areaM2} onChange={(v) => updateUnit(idx, "areaM2", v)} />
-                    </td>
-                    <td>
-                      <EditableCell value={u.valorUnidade} onChange={(v) => updateUnit(idx, "valorUnidade", v)} width="6.5rem" />
-                    </td>
-                    <td>
-                      <EditableCell value={u.ato} onChange={(v) => updateUnit(idx, "ato", v)} />
-                    </td>
-                    <td>
-                      <EditableCell value={u.mensal} onChange={(v) => updateUnit(idx, "mensal", v)} />
-                    </td>
-                    <td>
-                      <EditableCell value={u.anual} onChange={(v) => updateUnit(idx, "anual", v)} />
-                    </td>
-                    <td>
-                      <EditableCell value={u.unica} onChange={(v) => updateUnit(idx, "unica", v)} />
-                    </td>
-                    <td>
-                      <EditableCell value={u.financiamento} onChange={(v) => updateUnit(idx, "financiamento", v)} width="6.5rem" />
-                    </td>
-                    <td className="flex gap-1">
-                      <button className="btn btn-brand btn-sm" onClick={() => selectUnit(idx)} type="button">
-                        Gerar mensagem
-                      </button>
-                      <button className="btn btn-danger btn-sm" onClick={() => removeUnit(idx)} type="button" aria-label="Remover unidade">
-                        ×
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {units.length > 0 ? (
+            <>
+              <h3 className="font-display font-bold text-sm mb-3">
+                Unidades encontradas ({units.length}) -- os campos extraídos do PDF não podem ser editados, pra sempre bater com a
+                tabela original
+              </h3>
+              <div className="admin-row p-2 mb-6" style={{ overflowX: "auto" }}>
+                <table className="typ-table" style={{ minWidth: "60rem" }}>
+                  <thead>
+                    <tr>
+                      <th>Unidade</th>
+                      <th>Pavimento</th>
+                      <th>Área (m²)</th>
+                      <th>Valor</th>
+                      <th>Ato</th>
+                      <th>Mensal</th>
+                      <th>Anual</th>
+                      <th>Única</th>
+                      <th>Financiamento</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {units.map((u, idx) => {
+                      const manual = manualFlags[idx];
+                      return (
+                        <tr key={idx} style={idx === selectedUnitIdx ? { background: "var(--surface-2)" } : undefined}>
+                          {manual ? (
+                            <>
+                              <td>
+                                <EditableCell value={u.unitCode} onChange={(v) => updateManualUnit(idx, "unitCode", v)} width="6rem" />
+                              </td>
+                              <td>
+                                <EditableCell value={u.pavimento} onChange={(v) => updateManualUnit(idx, "pavimento", v)} width="6.5rem" />
+                              </td>
+                              <td>
+                                <EditableCell value={u.areaM2} onChange={(v) => updateManualUnit(idx, "areaM2", v)} />
+                              </td>
+                              <td>
+                                <EditableCell value={u.valorUnidade} onChange={(v) => updateManualUnit(idx, "valorUnidade", v)} width="6.5rem" />
+                              </td>
+                              <td>
+                                <EditableCell value={u.ato} onChange={(v) => updateManualUnit(idx, "ato", v)} />
+                              </td>
+                              <td>
+                                <EditableCell value={u.mensal} onChange={(v) => updateManualUnit(idx, "mensal", v)} />
+                              </td>
+                              <td>
+                                <EditableCell value={u.anual} onChange={(v) => updateManualUnit(idx, "anual", v)} />
+                              </td>
+                              <td>
+                                <EditableCell value={u.unica} onChange={(v) => updateManualUnit(idx, "unica", v)} />
+                              </td>
+                              <td>
+                                <EditableCell value={u.financiamento} onChange={(v) => updateManualUnit(idx, "financiamento", v)} width="6.5rem" />
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              <td className="typ-row-label">{u.unitCode}</td>
+                              <td>{u.pavimento}</td>
+                              <td>{u.areaM2.toLocaleString("pt-BR")}</td>
+                              <td>{money(u.valorUnidade)}</td>
+                              <td>{u.ato ? money(u.ato) : "—"}</td>
+                              <td>{u.mensal ? money(u.mensal) : "—"}</td>
+                              <td>{u.anual ? money(u.anual) : "—"}</td>
+                              <td>{u.unica ? money(u.unica) : "—"}</td>
+                              <td>{u.financiamento ? money(u.financiamento) : "—"}</td>
+                            </>
+                          )}
+                          <td className="flex gap-1">
+                            <button className="btn btn-brand btn-sm" onClick={() => selectUnit(idx)} type="button">
+                              Gerar mensagem
+                            </button>
+                            <button className="btn btn-danger btn-sm" onClick={() => removeUnit(idx)} type="button" aria-label="Remover unidade">
+                              ×
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm mb-6" style={{ color: "var(--text-2)" }}>
+              Nenhuma unidade salva ainda para {selectedDev.name}. Envie um PDF acima para começar, ou adicione manualmente.
+            </p>
+          )}
           <div className="flex items-center gap-3 mb-6">
             <button className="btn btn-outline btn-sm" style={{ color: "var(--accent)", borderColor: "var(--accent)" }} onClick={addUnit} type="button">
               + Adicionar unidade manualmente
             </button>
-            <button className="btn btn-brand btn-sm" onClick={saveUnits} disabled={saving || !selectedDev} type="button">
-              {saving ? "Salvando..." : "Salvar unidades no empreendimento"}
-            </button>
+            {units.length > 0 ? (
+              <button className="btn btn-brand btn-sm" onClick={saveUnits} disabled={saving} type="button">
+                {saving ? "Salvando..." : "Salvar unidades no empreendimento"}
+              </button>
+            ) : null}
             {saved ? <span className="status-msg ok">Salvo -- já aparece na página pública para esse empreendimento</span> : null}
           </div>
         </>
-      ) : selectedDev ? (
-        <p className="text-sm mb-6" style={{ color: "var(--text-2)" }}>
-          Nenhuma unidade salva ainda para {selectedDev.name}. Envie um PDF acima para começar.
-        </p>
       ) : null}
 
       {rawRows.length > 0 ? (
