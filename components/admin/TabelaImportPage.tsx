@@ -87,7 +87,13 @@ export function TabelaImportPage({ developments }: { developments: Development[]
     setMessage("");
     setSaved(false);
     try {
-      const rows = await extractPdfRows(file);
+      // Se a leitura travar de vez (ex.: falha silenciosa no worker do PDF
+      // pra algum arquivo específico), isso garante que a tela sempre volta
+      // a responder em vez de ficar "carregando" pra sempre.
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Demorou demais pra ler o PDF (mais de 20s) -- tente outro arquivo.")), 20000)
+      );
+      const rows = await Promise.race([extractPdfRows(file), timeout]);
       const parsed = parseTabelaRows(rows);
       setRawRows(rows);
       setUnits(parsed);
@@ -175,7 +181,7 @@ export function TabelaImportPage({ developments }: { developments: Development[]
         </div>
         <div className="field">
           <label>PDF da tabela de vendas / espelho</label>
-          <input type="file" accept="application/pdf" onChange={onPickPdf} disabled={processing || !selectedDev} />
+          <input type="file" accept="application/pdf,.pdf" onChange={onPickPdf} disabled={processing || !selectedDev} />
           {!selectedDev ? (
             <p className="text-xs mt-1" style={{ color: "var(--text-2)" }}>
               Selecione o empreendimento antes de enviar o PDF.
