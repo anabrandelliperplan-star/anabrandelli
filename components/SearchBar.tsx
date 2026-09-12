@@ -124,7 +124,14 @@ export function SearchBar({ developments }: { developments: Development[] }) {
       setOpen(false);
       return;
     }
-    setResults(searchItems(q, developments).slice(0, 8));
+    const all = searchItems(q, developments);
+    // Uma busca por nome do empreendimento casa TODOS os campos dele com a
+    // mesma pontuação -- um único empreendimento pode ter mais de 8 itens
+    // (Tabela e Espelho, Materiais, Descritivo, Memorial de Vagas ficavam de
+    // fora do corte fixo de 8). Só limita a 8 quando a busca é genérica o
+    // bastante para casar campos de vários empreendimentos diferentes.
+    const distinctDevs = new Set(all.map((item) => item.dev));
+    setResults(all.slice(0, distinctDevs.size <= 1 ? 20 : 8));
     setOpen(true);
   }
 
