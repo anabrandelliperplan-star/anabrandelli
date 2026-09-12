@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       request,
       onBeforeGenerateToken: async () => {
         return {
-          allowedContentTypes: ["image/jpeg", "image/png", "image/webp"],
+          allowedContentTypes: ["image/jpeg", "image/png", "image/webp", "application/pdf"],
           addRandomSuffix: true,
           access: "private",
         };
