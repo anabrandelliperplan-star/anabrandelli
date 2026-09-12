@@ -141,6 +141,9 @@ export function AdminDashboard({ initialData }: { initialData: HubData }) {
           <Link href="/admin/simulador" className="btn btn-outline btn-sm" style={{ color: "var(--accent)", borderColor: "var(--accent)" }}>
             Simulador de fluxo
           </Link>
+          <Link href="/admin/importar-tabela" className="btn btn-outline btn-sm" style={{ color: "var(--accent)", borderColor: "var(--accent)" }}>
+            Importar tabela (PDF)
+          </Link>
           <button className="btn btn-ghost btn-sm" onClick={logout} type="button">
             Sair
           </button>
