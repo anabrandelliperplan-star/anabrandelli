@@ -92,8 +92,12 @@ export function TabelaImportPage({ developments }: { developments: Development[]
       setRawRows(rows);
       setUnits(parsed);
       setManualFlags(parsed.map(() => false));
-    } catch {
-      setRawRows(["Não consegui ler esse PDF -- tenta outro arquivo."]);
+    } catch (err) {
+      // Mostra o erro de verdade em vez de uma mensagem genérica -- sem isso
+      // não dá pra saber por que um PDF específico falha (arquivo corrompido,
+      // protegido por senha, etc.).
+      const detail = err instanceof Error ? err.message : String(err);
+      setRawRows([`Não consegui ler esse PDF: ${detail}`]);
     } finally {
       setProcessing(false);
       e.target.value = "";
