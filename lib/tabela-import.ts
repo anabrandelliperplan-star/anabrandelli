@@ -101,7 +101,6 @@ export function buildTabelaWhatsAppMessage(unit: ExtractedUnit, dev: Development
     dev.location ? `📍 ${dev.location}` : null,
     `📐 ${unit.areaM2.toLocaleString("pt-BR")} m² | ${unit.pavimento}`,
     dev.descricao ? `ℹ️ ${dev.descricao}` : null,
-    dev.premiacao ? `🏆 ${dev.premiacao}` : null,
     `🏗️ ${statusLine(dev)}${dev.statusDetail ? ` | 📅 Entrega: ${formatDeliveryDate(dev.statusDetail)}` : ""}`,
     "",
     "Confira as condições facilitadas de pagamento:",
@@ -112,8 +111,6 @@ export function buildTabelaWhatsAppMessage(unit: ExtractedUnit, dev: Development
     `📈 Intermediárias: ${money(unit.anual)}`,
     `🗝️ Chaves: ${money(unit.unica)}`,
     `🏦 Financiamento bancário ou recursos próprios: ${money(unit.financiamento)}`,
-    "",
-    "Valores sujeitos a reajuste monetário (INCC durante a obra).",
     "",
     "Podemos agendar uma visita para você conhecer o decorado?",
   ];

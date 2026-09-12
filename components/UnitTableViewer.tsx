@@ -1,14 +1,31 @@
 "use client";
 
 import { useState } from "react";
-import type { Development } from "@/lib/types";
+import type { Development, TabelaUnidade } from "@/lib/types";
 import { waLink } from "@/lib/format";
 import { buildTabelaWhatsAppMessage } from "@/lib/tabela-import";
 import { money } from "@/lib/simulator";
-import { Icon, ICON_TABLE } from "@/lib/icons";
+import { Icon, ICON_SEARCH, ICON_TABLE } from "@/lib/icons";
+
+function UnitResultRow({ unit, onSelect }: { unit: TabelaUnidade; onSelect: () => void }) {
+  return (
+    <button type="button" className="search-result-row" onMouseDown={(e) => e.preventDefault()} onClick={onSelect}>
+      <Icon html={ICON_TABLE} />
+      <span className="search-result-text">
+        <span className="search-result-label">
+          {unit.unitCode} <span className="search-result-dev">· {unit.pavimento}</span>
+        </span>
+        <span className="search-result-value">
+          {unit.areaM2.toLocaleString("pt-BR")} m² · {money(unit.valorUnidade)}
+        </span>
+      </span>
+    </button>
+  );
+}
 
 export function UnitTableViewer({ dev }: { dev: Development }) {
   const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [message, setMessage] = useState("");
   const [phone, setPhone] = useState("");
@@ -17,12 +34,19 @@ export function UnitTableViewer({ dev }: { dev: Development }) {
   if (!dev.tabelaUnidades || dev.tabelaUnidades.length === 0) return null;
 
   const q = query.trim().toLowerCase();
-  const filtered = dev.tabelaUnidades.filter((u) => !q || u.unitCode.toLowerCase().includes(q));
+  const filtered = dev.tabelaUnidades.filter((u) => !q || u.unitCode.toLowerCase().includes(q)).slice(0, 8);
 
   function pick(idx: number) {
     setSelectedIdx(idx);
     setMessage(buildTabelaWhatsAppMessage(dev.tabelaUnidades[idx], dev));
     setCopied(false);
+    setQuery(dev.tabelaUnidades[idx].unitCode);
+    setOpen(false);
+  }
+
+  function clear() {
+    setQuery("");
+    setOpen(false);
   }
 
   async function copyMessage() {
@@ -38,56 +62,47 @@ export function UnitTableViewer({ dev }: { dev: Development }) {
     <details id={"unidades-" + dev.id} className="typ-details">
       <summary className="btn btn-ghost btn-sm w-full" style={{ justifyContent: "flex-start", textAlign: "left" }}>
         <Icon html={ICON_TABLE} />
-        Ver unidades disponíveis
+        Mandar fluxo para o cliente
       </summary>
       <div className="mt-2">
-        <input
-          type="text"
-          placeholder="Buscar unidade (ex.: T1-0706)"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          style={{ marginBottom: "0.5rem" }}
-        />
-        <div className="typ-table-wrap" style={{ maxHeight: "14rem" }}>
-          <table className="typ-table">
-            <thead>
-              <tr>
-                <th>Unidade</th>
-                <th>Pavimento</th>
-                <th>Área</th>
-                <th>Valor</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((u) => {
-                const idx = dev.tabelaUnidades.indexOf(u);
-                return (
-                  <tr key={idx} style={idx === selectedIdx ? { background: "var(--surface-2)" } : undefined}>
-                    <td className="typ-row-label">{u.unitCode}</td>
-                    <td>{u.pavimento}</td>
-                    <td>{u.areaM2.toLocaleString("pt-BR")} m²</td>
-                    <td>{money(u.valorUnidade)}</td>
-                    <td>
-                      <button className="btn btn-ghost btn-sm" onClick={() => pick(idx)} type="button">
-                        Gerar mensagem
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="text-sm" style={{ color: "var(--text-2)" }}>
-                    Nenhuma unidade encontrada para &quot;{query}&quot;.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
+        <div className="search-wrap" style={{ maxWidth: "none", margin: 0 }}>
+          <div className="search-box">
+            <button
+              type="button"
+              className="search-icon-btn"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setOpen(true)}
+              aria-label="Mostrar todas as unidades"
+            >
+              <Icon html={ICON_SEARCH} />
+            </button>
+            <input
+              type="text"
+              placeholder="Buscar unidade (ex.: T1-0706)"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setOpen(true);
+              }}
+              onFocus={() => setOpen(true)}
+              onBlur={() => setTimeout(() => setOpen(false), 150)}
+            />
+            <button type="button" className="search-clear" onClick={clear} aria-label="Limpar busca">
+              ✕
+            </button>
+          </div>
+          <div className="search-results" hidden={!open}>
+            {filtered.length ? (
+              filtered.map((u) => (
+                <UnitResultRow key={u.unitCode + u.pavimento} unit={u} onSelect={() => pick(dev.tabelaUnidades.indexOf(u))} />
+              ))
+            ) : (
+              <div className="search-empty">Nenhuma unidade encontrada para &quot;{query}&quot;.</div>
+            )}
+          </div>
         </div>
 
-        {message ? (
+        {message && selectedIdx !== null ? (
           <div className="mt-3">
             <textarea
               rows={14}
@@ -127,7 +142,7 @@ export function UnitTableViewer({ dev }: { dev: Development }) {
                 onClick={copyMessage}
                 type="button"
               >
-                {copied ? "Copiado!" : "Copiar texto"}
+                {copied ? "Copiado!" : "Copiar mensagem"}
               </button>
             </div>
           </div>
