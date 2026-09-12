@@ -157,7 +157,7 @@ export function buildTabelaWhatsAppMessage(unit: ExtractedUnit, dev: Development
     `🏷️ Valor total: ${money(unit.valorUnidade)}`,
     ...(paymentLines.length ? ["", "Confira as condições facilitadas de pagamento:", "", ...paymentLines] : []),
     "",
-    dev.temDecorado ? "Podemos agendar uma visita para você conhecer o decorado?" : "Podemos marcar um atendimento?",
+    dev.temDecorado ? "Podemos agendar uma visita para você conhecer o decorado?" : "Podemos agendar um atendimento?",
   ];
   return lines.filter((l) => l !== null).join("\n");
 }
