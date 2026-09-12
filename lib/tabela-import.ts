@@ -52,11 +52,19 @@ export async function extractPdfRows(file: File): Promise<string[]> {
 
 // Linha típica: "T1-0706 07º andar 62,69 539.161 43.133 1.498 8.087 21.566 431.329"
 // ou "LOJA 1 Térreo 305,07 2.895.204 231.616 8.042 43.428 115.808 2.316.163"
-const ROW_RE =
-  /^(.+?)\s+(Térreo|\d+º\s*andar)\s+(\d+,\d+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\*?$/i;
+// ou (Riverside, entrada dividida em "Ato" + "3 parcelas"):
+// "T1-0001 Térreo 84,09 627.940 12.559 12.559 3.489 18.838 25.118 502.352"
+// Cada incorporador organiza a "Entrada" de um jeito -- às vezes é só "Ato",
+// às vezes "Ato" + mais parcelas. Em vez de fixar a quantidade de colunas,
+// captura todo o resto da linha como números e usa posição a partir das
+// pontas: o 1º número sempre é o Valor da unidade, os 4 últimos sempre são
+// Mensais/Anuais/Única/Financiamento (nessa ordem) -- e tudo que sobrar no
+// meio (1 ou mais colunas) é somado em "ato" (entrada total).
+const ROW_RE = /^(.+?)\s+(Térreo|\d+º\s*andar)\s+(\d+,\d+)\s+(.+)$/i;
+const MONEY_TOKEN_RE = /^[\d.]+\*?$/;
 
 function parseMoneyCol(s: string): number {
-  return Number(s.replace(/\./g, "")) || 0;
+  return Number(s.replace(/\*/g, "").replace(/\./g, "")) || 0;
 }
 function parseAreaCol(s: string): number {
   return Number(s.replace(",", ".")) || 0;
@@ -67,16 +75,22 @@ export function parseTabelaRows(rows: string[]): ExtractedUnit[] {
   for (const row of rows) {
     const m = row.match(ROW_RE);
     if (!m) continue;
+    const tokens = m[4].trim().split(/\s+/).filter((t) => MONEY_TOKEN_RE.test(t));
+    // precisa de ao menos: valor, ato, mensal, anual, unica, financiamento
+    if (tokens.length < 6) continue;
+    const nums = tokens.map(parseMoneyCol);
+    const [mensal, anual, unica, financiamento] = nums.slice(-4);
+    const entrada = nums.slice(1, nums.length - 4);
     units.push({
       unitCode: m[1].trim(),
       pavimento: m[2].trim(),
       areaM2: parseAreaCol(m[3]),
-      valorUnidade: parseMoneyCol(m[4]),
-      ato: parseMoneyCol(m[5]),
-      mensal: parseMoneyCol(m[6]),
-      anual: parseMoneyCol(m[7]),
-      unica: parseMoneyCol(m[8]),
-      financiamento: parseMoneyCol(m[9]),
+      valorUnidade: nums[0],
+      ato: entrada.reduce((a, b) => a + b, 0),
+      mensal,
+      anual,
+      unica,
+      financiamento,
     });
   }
   return units;
