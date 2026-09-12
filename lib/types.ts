@@ -36,6 +36,10 @@ export interface Development {
   materialDescritivoLink: string;
   vagasGaragemLink: string;
   vagasIndeterminadas: boolean;
+  // Se tem unidade decorada pra visitar -- muda a frase final da mensagem de
+  // WhatsApp gerada a partir da tabela (convite pra ver o decorado ou, sem
+  // decorado, pra marcar um atendimento).
+  temDecorado: boolean;
   premiacao: string;
   descricao: string;
   fluxoPagamento: string;

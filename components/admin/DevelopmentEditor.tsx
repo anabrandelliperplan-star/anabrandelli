@@ -144,6 +144,17 @@ export function DevelopmentEditor({
             Vagas indeterminadas (sem memorial de vagas fixo — mostra esse aviso direto no card)
           </label>
         </div>
+        <div className="field sm:col-span-2">
+          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", fontWeight: 400 }}>
+            <input
+              type="checkbox"
+              style={{ width: "auto" }}
+              checked={draft.temDecorado}
+              onChange={(e) => set("temDecorado", e.target.checked)}
+            />
+            Tem unidade decorada pra visitar (senão a mensagem gerada da tabela convida pra marcar um atendimento, em vez de conhecer o decorado)
+          </label>
+        </div>
         <TextareaField label="Descrição (resumo do empreendimento)" value={draft.descricao} onChange={(v) => set("descricao", v)} />
         <TextareaField
           label="Fluxo de pagamento (ex.: 20% período obra (direto com a construtora) / 80% após a entrega (recursos próprios/financiamento))"
