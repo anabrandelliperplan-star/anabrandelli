@@ -26,16 +26,49 @@ function EditableCell({ value, onChange, width }: { value: string | number; onCh
 }
 
 export function TabelaImportPage({ developments }: { developments: Development[] }) {
+  const [devList, setDevList] = useState(developments);
   const [selectedDevId, setSelectedDevId] = useState("");
   const [units, setUnits] = useState<ExtractedUnit[]>([]);
   const [rawRows, setRawRows] = useState<string[]>([]);
   const [processing, setProcessing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [selectedUnitIdx, setSelectedUnitIdx] = useState<number | null>(null);
   const [message, setMessage] = useState("");
   const [clientPhone, setClientPhone] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const selectedDev = developments.find((d) => d.id === selectedDevId) || null;
+  const selectedDev = devList.find((d) => d.id === selectedDevId) || null;
+
+  function selectDevelopment(id: string) {
+    setSelectedDevId(id);
+    const dev = devList.find((d) => d.id === id);
+    setUnits(dev?.tabelaUnidades || []);
+    setRawRows([]);
+    setSelectedUnitIdx(null);
+    setMessage("");
+    setSaved(false);
+  }
+
+  async function saveUnits() {
+    if (!selectedDev) return;
+    setSaving(true);
+    setSaved(false);
+    try {
+      const res = await fetch(`/api/admin/developments/${selectedDev.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tabelaUnidades: units }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setDevList((list) => list.map((d) => (d.id === updated.id ? updated : d)));
+        setSaved(true);
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function onPickPdf(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -45,6 +78,7 @@ export function TabelaImportPage({ developments }: { developments: Development[]
     setRawRows([]);
     setSelectedUnitIdx(null);
     setMessage("");
+    setSaved(false);
     try {
       const rows = await extractPdfRows(file);
       setRawRows(rows);
@@ -65,6 +99,20 @@ export function TabelaImportPage({ developments }: { developments: Development[]
         return { ...u, [key]: value };
       })
     );
+    setSaved(false);
+  }
+
+  function addUnit() {
+    setUnits((list) => [
+      ...list,
+      { unitCode: "", pavimento: "", areaM2: 0, valorUnidade: 0, ato: 0, mensal: 0, anual: 0, unica: 0, financiamento: 0 },
+    ]);
+    setSaved(false);
+  }
+
+  function removeUnit(idx: number) {
+    setUnits((list) => list.filter((_, i) => i !== idx));
+    setSaved(false);
   }
 
   function selectUnit(idx: number) {
@@ -90,7 +138,7 @@ export function TabelaImportPage({ developments }: { developments: Development[]
           <div className="rule-eyebrow eyebrow">Painel administrativo</div>
           <h2 className="font-display font-extrabold text-xl mt-2">Importar tabela de vendas (PDF)</h2>
           <p className="text-sm mt-1" style={{ color: "var(--text-2)" }}>
-            Visível só aqui por enquanto -- ainda não aparece na página pública.
+            Depois de salvar, as unidades ficam visíveis para qualquer corretor na página pública desse empreendimento.
           </p>
         </div>
         <Link href="/admin" className="btn btn-ghost btn-sm">
@@ -101,9 +149,9 @@ export function TabelaImportPage({ developments }: { developments: Development[]
       <div className="admin-row p-4 grid gap-3 sm:grid-cols-2 mb-6">
         <div className="field">
           <label>Empreendimento</label>
-          <select value={selectedDevId} onChange={(e) => setSelectedDevId(e.target.value)}>
+          <select value={selectedDevId} onChange={(e) => selectDevelopment(e.target.value)}>
             <option value="">Selecione um empreendimento</option>
-            {developments.map((dev) => (
+            {devList.map((dev) => (
               <option key={dev.id} value={dev.id}>
                 {dev.name}
               </option>
@@ -176,9 +224,12 @@ export function TabelaImportPage({ developments }: { developments: Development[]
                     <td>
                       <EditableCell value={u.financiamento} onChange={(v) => updateUnit(idx, "financiamento", v)} width="6.5rem" />
                     </td>
-                    <td>
+                    <td className="flex gap-1">
                       <button className="btn btn-brand btn-sm" onClick={() => selectUnit(idx)} type="button">
                         Gerar mensagem
+                      </button>
+                      <button className="btn btn-danger btn-sm" onClick={() => removeUnit(idx)} type="button" aria-label="Remover unidade">
+                        ×
                       </button>
                     </td>
                   </tr>
@@ -186,7 +237,20 @@ export function TabelaImportPage({ developments }: { developments: Development[]
               </tbody>
             </table>
           </div>
+          <div className="flex items-center gap-3 mb-6">
+            <button className="btn btn-outline btn-sm" style={{ color: "var(--accent)", borderColor: "var(--accent)" }} onClick={addUnit} type="button">
+              + Adicionar unidade manualmente
+            </button>
+            <button className="btn btn-brand btn-sm" onClick={saveUnits} disabled={saving || !selectedDev} type="button">
+              {saving ? "Salvando..." : "Salvar unidades no empreendimento"}
+            </button>
+            {saved ? <span className="status-msg ok">Salvo -- já aparece na página pública para esse empreendimento</span> : null}
+          </div>
         </>
+      ) : selectedDev ? (
+        <p className="text-sm mb-6" style={{ color: "var(--text-2)" }}>
+          Nenhuma unidade salva ainda para {selectedDev.name}. Envie um PDF acima para começar.
+        </p>
       ) : null}
 
       {rawRows.length > 0 ? (

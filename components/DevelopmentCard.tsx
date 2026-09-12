@@ -6,6 +6,7 @@ import { MaterialButtons } from "./MaterialButtons";
 import { TypologyDetails } from "./TypologyDetails";
 import { Carousel } from "./Carousel";
 import { DescriptionText } from "./DescriptionText";
+import { UnitTableViewer } from "./UnitTableViewer";
 
 function photosOf(dev: Development): string[] {
   return dev.photos && dev.photos.length ? dev.photos : [];
@@ -87,6 +88,7 @@ export function DevelopmentCard({ dev, whatsapp }: { dev: Development; whatsapp:
         </div>
         <MaterialButtons dev={dev} />
         <TypologyDetails dev={dev} />
+        <UnitTableViewer dev={dev} />
         <a
           href={waLink(whatsapp, "Olá Ana Lívia, tenho uma dúvida sobre o " + dev.name)}
           className="btn btn-brand w-full mt-auto"

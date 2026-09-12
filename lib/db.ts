@@ -31,6 +31,7 @@ const DEFAULT_DEV_SIM_DATES = {
   simSinal2Mes: "",
   simSinal3Mes: "",
   simMesesObra: 0,
+  tabelaUnidades: [],
 };
 
 const EMPTY_DATA: HubData = {

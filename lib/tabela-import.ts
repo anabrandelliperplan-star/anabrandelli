@@ -1,18 +1,8 @@
-import type { Development } from "./types";
+import type { Development, TabelaUnidade } from "./types";
 import { formatDeliveryDate } from "./format";
 import { money } from "./simulator";
 
-export interface ExtractedUnit {
-  unitCode: string;
-  pavimento: string;
-  areaM2: number;
-  valorUnidade: number;
-  ato: number;
-  mensal: number;
-  anual: number;
-  unica: number;
-  financiamento: number;
-}
+export type ExtractedUnit = TabelaUnidade;
 
 // Lê o PDF inteiramente no navegador (pdfjs-dist) -- nada é enviado pro
 // servidor. Agrupa os itens de texto por posição (mesma altura = mesma

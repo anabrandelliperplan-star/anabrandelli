@@ -32,6 +32,7 @@ export async function POST() {
     simSinal2Mes: "",
     simSinal3Mes: "",
     simMesesObra: 0,
+    tabelaUnidades: [],
   };
   data.developments.push(dev);
   await saveData(data);

@@ -8,6 +8,18 @@ export interface TypologyColumn {
   support: string;
 }
 
+export interface TabelaUnidade {
+  unitCode: string;
+  pavimento: string;
+  areaM2: number;
+  valorUnidade: number;
+  ato: number;
+  mensal: number;
+  anual: number;
+  unica: number;
+  financiamento: number;
+}
+
 export interface Development {
   id: string;
   name: string;
@@ -38,6 +50,9 @@ export interface Development {
   simSinal2Mes: string;
   simSinal3Mes: string;
   simMesesObra: number; // quantidade de mensais -- varia de empreendimento pra empreendimento
+  // Unidades extraídas da tabela de vendas em PDF (painel admin) -- exibidas
+  // e usadas para gerar a mensagem de WhatsApp direto na página pública.
+  tabelaUnidades: TabelaUnidade[];
 }
 
 export interface Settings {
