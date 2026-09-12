@@ -31,7 +31,21 @@ export function UnitTableViewer({ dev }: { dev: Development }) {
   const [phone, setPhone] = useState("");
   const [copied, setCopied] = useState(false);
 
-  if (!dev.tabelaUnidades || dev.tabelaUnidades.length === 0) return null;
+  const hasUnits = Boolean(dev.tabelaUnidades && dev.tabelaUnidades.length);
+
+  if (!hasUnits) {
+    // Reserva a mesma altura da linha "Mandar fluxo para o cliente" mesmo
+    // quando o empreendimento ainda não tem unidades salvas -- senão os
+    // cards ficam desalinhados entre si (mesmo padrão usado em spec/premio).
+    return (
+      <div className="typ-details is-empty" aria-hidden="true">
+        <div className="btn btn-ghost btn-sm w-full" style={{ justifyContent: "flex-start", textAlign: "left" }}>
+          <Icon html={ICON_TABLE} />
+          Mandar fluxo para o cliente
+        </div>
+      </div>
+    );
+  }
 
   const q = query.trim().toLowerCase();
   const filtered = dev.tabelaUnidades.filter((u) => !q || u.unitCode.toLowerCase().includes(q)).slice(0, 8);

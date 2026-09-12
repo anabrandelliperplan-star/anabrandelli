@@ -110,6 +110,7 @@
     position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:999px;
     background:#8A3A3A; color:#fff; border:none; font-size:12px; line-height:1; cursor:pointer;
   }
+  .typ-details.is-empty{ visibility:hidden; }
   .typ-details summary{ cursor:pointer; list-style:none; }
   .typ-details summary::-webkit-details-marker{ display:none; }
   .typ-details summary::marker{ content:""; }
@@ -151,7 +152,10 @@
   .spec-label{ display:flex; align-items:center; gap:0.35rem; font-size:0.66rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:700; color:var(--text-3); }
   .spec-label svg{ flex-shrink:0; }
   .spec-value{ margin-top:0.3rem; font-size:0.85rem; font-weight:600; color:var(--text); white-space:pre-line; line-height:1.35; }
-  .spec-value-payment{ min-height:calc(0.85rem * 1.35 * 4); }
+  .spec-value-payment{
+    min-height:calc(0.85rem * 1.35 * 4); max-height:calc(0.85rem * 1.35 * 4);
+    display:-webkit-box; line-clamp:4; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
+  }
   .spec.is-empty{ visibility:hidden; }
   .premio-chip{
     display:flex; align-items:flex-start; gap:0.45rem; font-family:var(--font-space-grotesk), sans-serif; font-weight:700;
