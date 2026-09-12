@@ -6,7 +6,6 @@ import { parsePriceInput } from "@/lib/format";
 import { Icon, ICON_MINIMIZE } from "@/lib/icons";
 import { TypologyTableEditor } from "./TypologyTableEditor";
 import { MultiPhotoField } from "./PhotoUploader";
-import { LinkOrFileField } from "./LinkOrFileField";
 
 const STATUS_OPTIONS: Array<[DevelopmentStatus, string]> = [
   ["progress", "Em obras"],
@@ -121,36 +120,19 @@ export function DevelopmentEditor({
           value={draft.premiacao}
           onChange={(v) => set("premiacao", v)}
         />
-        <LinkOrFileField
-          label="Link da Tabela deste empreendimento"
-          value={draft.tabelaLink}
-          onChange={(v) => set("tabelaLink", v)}
-          pathPrefix={`developments/${draft.id}/tabela`}
-        />
-        <LinkOrFileField
-          label="Link do Book"
-          value={draft.bookLink}
-          onChange={(v) => set("bookLink", v)}
-          pathPrefix={`developments/${draft.id}/book`}
-        />
-        <LinkOrFileField
+        <Field label="Link da Tabela deste empreendimento" value={draft.tabelaLink} onChange={(v) => set("tabelaLink", v)} />
+        <Field label="Link do Book" value={draft.bookLink} onChange={(v) => set("bookLink", v)} />
+        <Field
           label="Link de todos os materiais (pasta geral do Drive)"
           value={draft.driveLink}
           onChange={(v) => set("driveLink", v)}
-          pathPrefix={`developments/${draft.id}/materiais`}
         />
-        <LinkOrFileField
+        <Field
           label="Link do Material Descritivo"
           value={draft.materialDescritivoLink}
           onChange={(v) => set("materialDescritivoLink", v)}
-          pathPrefix={`developments/${draft.id}/descritivo`}
         />
-        <LinkOrFileField
-          label="Link do Memorial de Vagas"
-          value={draft.vagasGaragemLink}
-          onChange={(v) => set("vagasGaragemLink", v)}
-          pathPrefix={`developments/${draft.id}/memorial-vagas`}
-        />
+        <Field label="Link do Memorial de Vagas" value={draft.vagasGaragemLink} onChange={(v) => set("vagasGaragemLink", v)} />
         <div className="field sm:col-span-2">
           <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", fontWeight: 400 }}>
             <input
