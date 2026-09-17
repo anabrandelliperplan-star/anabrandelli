@@ -3,13 +3,7 @@ import { Icon, ICON_SOLAR } from "@/lib/icons";
 
 export function SolarDetails({ dev }: { dev: Development }) {
   const hasText = Boolean(dev.incidenciaSolar && dev.incidenciaSolar.trim() !== "");
-  if (!hasText) {
-    return (
-      <span className="btn btn-ghost btn-sm w-full" style={{ visibility: "hidden" }} aria-hidden="true">
-        ·
-      </span>
-    );
-  }
+  if (!hasText) return null;
   return (
     <details id={"solar-" + dev.id} className="typ-details">
       <summary className="btn btn-ghost btn-sm w-full" style={{ justifyContent: "flex-start", textAlign: "left" }}>
