@@ -28,6 +28,11 @@ const SEARCH_SYNONYMS: Array<[string, string[]]> = [
   ["descricao", ["sobre o empreendimento", "resumo do empreendimento", "informacoes gerais"]],
   ["material descritivo", ["memorial descritivo", "descritivo do imovel", "ficha tecnica", "memorial", "especificacoes tecnicas", "especificacoes", "acabamentos", "detalhamento do imovel"]],
   ["vagas", ["vagas de garagem", "vaga de garagem", "garagem", "quantidade de vagas", "quantas vagas", "numero de vagas", "vaga de estacionamento", "vagas de estacionamento", "estacionamento", "discriminacao das vagas", "discriminacao de vagas", "vagas indeterminadas", "indeterminadas"]],
+  // Canônico "mosca" (não "implantacao") de propósito: "implantacao" contém
+  // "planta", que é gatilho do grupo "tipologia" -- usar como canônico
+  // corromperia o resultado quando o gatilho "planta"/"plantas" rodasse
+  // depois, na mesma passagem (mesmo bug já visto com "memorial vagas").
+  ["mosca", ["implantacao", "planta de implantacao", "vista de mosca", "visao de mosca", "vista aerea", "visao aerea", "planta do terreno", "layout do terreno"]],
 ];
 
 const SEARCH_SYNONYM_PAIRS: Array<[string, string]> = (() => {
@@ -68,6 +73,7 @@ export function buildSearchIndex(developments: Development[]): SearchItem[] {
     if (dev.materialDescritivoLink) items.push({ label: "Material Descritivo", dev: dev.name, kind: "link", value: "Abrir material descritivo", url: driveParts(dev.materialDescritivoLink)?.view || dev.materialDescritivoLink, anchorId: "descritivo-" + dev.id, cardId: "card-" + dev.id });
     if (dev.vagasIndeterminadas) items.push({ label: "Memorial de Vagas", dev: dev.name, kind: "text", value: "Vagas indeterminadas", anchorId: "garagem-" + dev.id, cardId: "card-" + dev.id });
     else if (dev.vagasGaragemLink) items.push({ label: "Memorial de Vagas", dev: dev.name, kind: "link", value: "Abrir memorial de vagas", url: driveParts(dev.vagasGaragemLink)?.view || dev.vagasGaragemLink, anchorId: "garagem-" + dev.id, cardId: "card-" + dev.id });
+    if (dev.implantacaoLink) items.push({ label: "Implantação / Mosca", dev: dev.name, kind: "link", value: "Abrir implantação", url: driveParts(dev.implantacaoLink)?.view || dev.implantacaoLink, anchorId: "implantacao-" + dev.id, cardId: "card-" + dev.id });
   });
   return items;
 }

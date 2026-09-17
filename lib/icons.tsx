@@ -28,6 +28,7 @@ export const ICON_REFRESH = '<svg class="icon benefit-icon" width="20" height="2
 export const ICON_COINS = '<svg class="icon benefit-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M3 12v5c0 1.7 2.7 3 6 3 2.3 0 4.3-.6 5.4-1.6"/><ellipse cx="17" cy="14" rx="4.5" ry="2.3"/><path d="M12.5 14v3c0 1.3 2 2.3 4.5 2.3s4.5-1 4.5-2.3v-3"/></svg>';
 export const ICON_DOC = '<svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>';
 export const ICON_PARKING = '<svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg>';
+export const ICON_MAP = '<svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/></svg>';
 
 export function Icon({ html, className }: { html: string; className?: string }) {
   return <span style={{ display: "contents" }} className={className} dangerouslySetInnerHTML={{ __html: html }} />;

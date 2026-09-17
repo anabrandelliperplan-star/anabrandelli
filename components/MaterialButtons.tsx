@@ -1,6 +1,6 @@
 import type { Development } from "@/lib/types";
 import { driveParts, resolveMapsLink } from "@/lib/format";
-import { Icon, ICON_PIN, ICON_BOOK, ICON_LIST, ICON_FOLDER, ICON_DOC, ICON_PARKING } from "@/lib/icons";
+import { Icon, ICON_PIN, ICON_BOOK, ICON_LIST, ICON_FOLDER, ICON_DOC, ICON_PARKING, ICON_MAP } from "@/lib/icons";
 
 interface Slot {
   key: string;
@@ -9,7 +9,7 @@ interface Slot {
   href: string | null;
 }
 
-// Sempre 6 posicoes, na mesma ordem -- quando o link nao esta preenchido,
+// Sempre 7 posicoes, na mesma ordem -- quando o link nao esta preenchido,
 // mostra o rotulo esmaecido (nao clicavel) em vez de deixar o espaco em
 // branco, assim a fileira de botoes continua com sentido visual mesmo
 // incompleta, e ainda alinha entre os cards da vitrine.
@@ -23,6 +23,7 @@ export function MaterialButtons({ dev }: { dev: Development }) {
     dev.vagasIndeterminadas
       ? { key: "garagem", icon: ICON_PARKING, label: "Vagas indeterminadas", href: null }
       : { key: "garagem", icon: ICON_PARKING, label: "Memorial de Vagas", href: dev.vagasGaragemLink ? driveParts(dev.vagasGaragemLink)?.view || dev.vagasGaragemLink : null },
+    { key: "implantacao", icon: ICON_MAP, label: "Implantação / Mosca", href: dev.implantacaoLink ? driveParts(dev.implantacaoLink)?.view || dev.implantacaoLink : null },
   ];
 
   return (

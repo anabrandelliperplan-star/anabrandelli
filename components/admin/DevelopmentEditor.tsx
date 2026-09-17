@@ -6,6 +6,7 @@ import { parsePriceInput } from "@/lib/format";
 import { Icon, ICON_MINIMIZE } from "@/lib/icons";
 import { TypologyTableEditor } from "./TypologyTableEditor";
 import { MultiPhotoField } from "./PhotoUploader";
+import { LinkOrFileField } from "./LinkOrFileField";
 
 const STATUS_OPTIONS: Array<[DevelopmentStatus, string]> = [
   ["progress", "Em obras"],
@@ -133,6 +134,12 @@ export function DevelopmentEditor({
           onChange={(v) => set("materialDescritivoLink", v)}
         />
         <Field label="Link do Memorial de Vagas" value={draft.vagasGaragemLink} onChange={(v) => set("vagasGaragemLink", v)} />
+        <LinkOrFileField
+          label="Implantação / Mosca (link ou PDF)"
+          value={draft.implantacaoLink}
+          onChange={(v) => set("implantacaoLink", v)}
+          pathPrefix={`developments/${draft.id}/implantacao`}
+        />
         <div className="field sm:col-span-2">
           <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", fontWeight: 400 }}>
             <input

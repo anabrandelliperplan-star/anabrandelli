@@ -20,6 +20,7 @@ export async function POST() {
     mapsLink: "",
     materialDescritivoLink: "",
     vagasGaragemLink: "",
+    implantacaoLink: "",
     vagasIndeterminadas: false,
     temDecorado: false,
     premiacao: "",

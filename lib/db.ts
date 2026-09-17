@@ -35,6 +35,7 @@ const DEFAULT_DEV_SIM_DATES = {
   // Só o MB Park tem decorado pra visitar -- todo o resto marca atendimento
   // por padrão, e ela liga manualmente pros empreendimentos que tiverem.
   temDecorado: false,
+  implantacaoLink: "",
 };
 
 const EMPTY_DATA: HubData = {
