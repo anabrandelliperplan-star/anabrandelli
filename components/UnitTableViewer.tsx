@@ -48,7 +48,7 @@ export function UnitTableViewer({ dev }: { dev: Development }) {
   }
 
   const q = query.trim().toLowerCase();
-  const filtered = dev.tabelaUnidades.filter((u) => !q || u.unitCode.toLowerCase().includes(q)).slice(0, 8);
+  const filtered = dev.tabelaUnidades.filter((u) => !q || u.unitCode.toLowerCase().includes(q));
 
   function pick(idx: number) {
     setSelectedIdx(idx);
@@ -73,7 +73,16 @@ export function UnitTableViewer({ dev }: { dev: Development }) {
   }
 
   return (
-    <details id={"unidades-" + dev.id} className="typ-details">
+    <details
+      id={"unidades-" + dev.id}
+      className="typ-details"
+      onToggle={(e) => {
+        // Ao abrir o "Mandar fluxo para o cliente", já mostra todas as
+        // unidades direto -- no celular não dá pra confiar em :focus/:hover
+        // pra abrir a lista sozinha, tem que ser explícito.
+        if (e.currentTarget.open) setOpen(true);
+      }}
+    >
       <summary className="btn btn-ghost btn-sm w-full" style={{ justifyContent: "flex-start", textAlign: "left" }}>
         <Icon html={ICON_TABLE} />
         Mandar fluxo para o cliente
