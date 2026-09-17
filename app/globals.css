@@ -96,7 +96,7 @@
   .card{
     background:var(--surface); border:1px solid var(--border); border-radius:1.25rem; overflow:hidden;
     box-shadow:0 1px 2px rgba(0,0,0,0.2), 0 8px 24px -16px rgba(0,0,0,0.4);
-    display:flex; flex-direction:column; height:100%;
+    display:flex; flex-direction:column;
     transition:background-color .25s ease, border-color .25s ease;
   }
   .card-photo{ position:relative; aspect-ratio:4/3; display:flex; align-items:center; justify-content:center; overflow:hidden; background:linear-gradient(135deg, var(--elevate), var(--surface-2)); }
