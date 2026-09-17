@@ -29,6 +29,10 @@ export const ICON_COINS = '<svg class="icon benefit-icon" width="20" height="20"
 export const ICON_DOC = '<svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>';
 export const ICON_PARKING = '<svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg>';
 export const ICON_MAP = '<svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/></svg>';
+// Não reutiliza ICON_SUN aqui de propósito -- aquele carrega a classe
+// "icon-sun" usada pelo CSS do alternador de tema claro/escuro (fica
+// escondido no tema claro). Este é um ícone de sol "neutro" pra uso geral.
+export const ICON_SOLAR = '<svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.2M12 19.3v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>';
 
 export function Icon({ html, className }: { html: string; className?: string }) {
   return <span style={{ display: "contents" }} className={className} dangerouslySetInnerHTML={{ __html: html }} />;
@@ -44,5 +48,6 @@ export function searchIconFor(label: string): string {
   if (label === "Todos os materiais") return ICON_FOLDER;
   if (label === "Material Descritivo") return ICON_DOC;
   if (label === "Memorial de Vagas") return ICON_PARKING;
+  if (label === "Incidência Solar") return ICON_SOLAR;
   return ICON_LIST;
 }

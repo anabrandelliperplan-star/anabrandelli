@@ -36,6 +36,7 @@ const DEFAULT_DEV_SIM_DATES = {
   // por padrão, e ela liga manualmente pros empreendimentos que tiverem.
   temDecorado: false,
   implantacaoLink: "",
+  incidenciaSolar: "",
 };
 
 const EMPTY_DATA: HubData = {

@@ -33,6 +33,7 @@ const SEARCH_SYNONYMS: Array<[string, string[]]> = [
   // corromperia o resultado quando o gatilho "planta"/"plantas" rodasse
   // depois, na mesma passagem (mesmo bug já visto com "memorial vagas").
   ["mosca", ["implantacao", "planta de implantacao", "vista de mosca", "visao de mosca", "vista aerea", "visao aerea", "planta do terreno", "layout do terreno"]],
+  ["incidencia solar", ["sol da manha", "sol da tarde", "posicao do sol", "orientacao solar", "insolacao", "qual lado pega sol", "quais finais pegam sol da manha", "quais finais pegam sol da tarde", "incidencia de sol"]],
 ];
 
 const SEARCH_SYNONYM_PAIRS: Array<[string, string]> = (() => {
@@ -63,6 +64,7 @@ export function buildSearchIndex(developments: Development[]): SearchItem[] {
     items.push({ label: "Fluxo de pagamento", dev: dev.name, kind: "text", value: dev.fluxoPagamento || "Não informado", anchorId: "payment-" + dev.id, cardId: "card-" + dev.id });
     items.push({ label: "Premiação", dev: dev.name, kind: "text", value: dev.premiacao || "Não informado", anchorId: "premio-" + dev.id, cardId: "card-" + dev.id });
     items.push({ label: "Descrição", dev: dev.name, kind: "text", value: dev.descricao || "Não informado", anchorId: "desc-" + dev.id, cardId: "card-" + dev.id });
+    items.push({ label: "Incidência Solar", dev: dev.name, kind: "text", value: dev.incidenciaSolar || "Não informado", anchorId: "solar-" + dev.id, cardId: "card-" + dev.id });
     items.push({ label: "Tipologia", dev: dev.name, kind: "text", value: dev.typologies?.length ? "Ver tabela de tipologias" : (dev.typology || "Não informado"), anchorId: "typ-" + dev.id, cardId: "card-" + dev.id });
     items.push({ label: "Valor a partir de", dev: dev.name, kind: "text", value: money(dev.priceFrom), anchorId: "price-" + dev.id, cardId: "card-" + dev.id });
     if (dev.unidadesDisponiveis) items.push({ label: "Unidades disponíveis", dev: dev.name, kind: "text", value: dev.unidadesDisponiveis, anchorId: "price-" + dev.id, cardId: "card-" + dev.id });

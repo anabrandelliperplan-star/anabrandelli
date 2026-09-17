@@ -164,6 +164,11 @@ export function DevelopmentEditor({
         </div>
         <TextareaField label="Descrição (resumo do empreendimento)" value={draft.descricao} onChange={(v) => set("descricao", v)} />
         <TextareaField
+          label="Incidência Solar (ex.: Finais 1 e 2 -- sol da manhã / Finais 3 e 4 -- sol da tarde)"
+          value={draft.incidenciaSolar}
+          onChange={(v) => set("incidenciaSolar", v)}
+        />
+        <TextareaField
           label="Fluxo de pagamento (ex.: 20% período obra (direto com a construtora) / 80% após a entrega (recursos próprios/financiamento))"
           value={draft.fluxoPagamento}
           onChange={(v) => set("fluxoPagamento", v)}
